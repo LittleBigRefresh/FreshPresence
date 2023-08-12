@@ -5,6 +5,7 @@ const Lbp = @import("lbp.zig");
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer if (gpa.deinit() == .leak) @panic("MEMORY LEAK");
     var allocator = gpa.allocator();
 
     var args = try std.process.argsAlloc(allocator);
@@ -58,6 +59,7 @@ pub fn main() !void {
                 .fake => "On a fake level",
                 .moon => "On their moon",
                 .pod => "In the pod",
+                else => "Ingame", //Fallback to generic when theres an unknown value
             }),
             .state = Rpc.Packet.ArrayString(128).create(switch (player_status.value.data.game) {
                 .lbp1 => "Playing LittleBigPlanet 1",
@@ -66,6 +68,7 @@ pub fn main() !void {
                 .lbpvita => "Playing LittleBigPlanet on Vita",
                 .lbppsp => "Playing LittleBigPlanet on PSP",
                 .website => "Joined from the website",
+                else => "Playing LittleBigPlanet", //Fallback to generic when theres an unknown value
             }),
             .timestamps = .{
                 .start = null,

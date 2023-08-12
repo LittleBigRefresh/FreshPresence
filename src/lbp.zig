@@ -106,6 +106,7 @@ pub const ApiPlatform = enum(i32) {
     rpcs3 = 1,
     vita = 2,
     website = 3,
+    _,
 };
 
 pub const ApiGame = enum(i32) {
@@ -115,6 +116,7 @@ pub const ApiGame = enum(i32) {
     lbpvita,
     lbppsp,
     website,
+    _,
 };
 
 pub const ApiRoomSlotType = enum(i32) {
@@ -136,6 +138,7 @@ pub const ApiRoomSlotType = enum(i32) {
     adventure_planet_local = 15,
     adventure_level_local = 16,
     adventure_area_level = 17,
+    _,
 };
 
 pub const ApiRoomState = enum(i32) {
@@ -143,6 +146,7 @@ pub const ApiRoomState = enum(i32) {
     loading = 1,
     diving_in = 3,
     waiting_for_players = 4,
+    _,
 };
 
 pub const ApiRoomMood = enum(i32) {
@@ -150,6 +154,7 @@ pub const ApiRoomMood = enum(i32) {
     rejecting_all_but_friends = 1,
     rejecting_only_friends = 2,
     allowing_all = 3,
+    _,
 };
 
 pub const ApiRoomPlayer = struct {
