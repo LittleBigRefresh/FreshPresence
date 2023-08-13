@@ -43,7 +43,7 @@ pub fn main() !void {
             .details = Rpc.Packet.ArrayString(128).create(switch (player_status.value.data.levelType) {
                 .story => "Playing a story level",
                 .online => "Online",
-                .remote_moon => "On someone elses moon",
+                .remote_moon => "Creating a level on someone elses Moon",
                 .moon_group => "Moon group",
                 .story_group => "Story group",
                 .dlc_level => "Playing a DLC level",
@@ -57,7 +57,7 @@ pub fn main() !void {
                 .adventure_level_local => "Adventure level local",
                 .adventure_area_level => "Adventure area level",
                 .fake => "On a fake level",
-                .moon => "On their moon",
+                .moon => "Creating a level on the Moon",
                 .pod => "In the pod",
                 else => "Ingame", //Fallback to generic when theres an unknown value
             }),
@@ -81,7 +81,11 @@ pub fn main() !void {
                 .small_image = null,
                 .small_text = null,
             },
-            .party = null,
+            .party = .{
+                .id = Rpc.Packet.ArrayString(128).create(player_status.value.data.roomId),
+                .privacy = Rpc.Packet.Presence.Party.Privacy.private,
+                .size = &[2]i32{ @intCast(player_status.value.data.playerIds.len), 4 },
+            },
         };
         try rpc_client.setPresence(presence);
 
