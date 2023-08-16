@@ -74,6 +74,69 @@ pub const InstanceInfo = ApiResponse(struct {
     maintenanceModeEnabled: bool,
 });
 
+pub fn getLevel(allocator: std.mem.Allocator, uri: std.Uri, id: i32) !?std.json.Parsed(ApiGameLevel) {
+    var url = std.ArrayList(u8).init(allocator);
+    defer url.deinit();
+    try std.fmt.format(url.writer(), "/api/v3/levels/id/{d}", .{id});
+
+    var parsed = makeRequestAndParse(allocator, ApiGameLevel, uri, url.items) catch |err| {
+        if (err == RequestError.ErrorCode404) {
+            return null;
+        } else {
+            return err;
+        }
+    };
+
+    return parsed;
+}
+
+pub const ApiGameLevel = ApiResponse(struct {
+    levelId: i32,
+    publisher: ApiGameUser,
+    title: []const u8,
+    iconHash: []const u8,
+    description: []const u8,
+    location: ApiGameLocation,
+    publishDate: []const u8,
+    updateDate: []const u8,
+    minPlayers: u3,
+    maxPlayers: u3,
+    enforceMinMaxPlayers: bool,
+    sameScreenGame: bool,
+    skillRewards: []const ApiGameSkillReward,
+    yayRatings: i32,
+    booRatings: i32,
+    hearts: i32,
+    uniquePlays: i32,
+    teamPicked: bool,
+});
+
+pub const ApiGameSkillReward = struct {
+    id: i32,
+    enabled: bool,
+    title: ?[]const u8,
+    requiredAmount: f32,
+    conditionType: enum(i32) {
+        score = 0,
+        time = 1,
+        lives = 2,
+    },
+};
+
+pub const ApiGameUser = struct {
+    userId: []const u8,
+    username: []const u8,
+    iconHash: []const u8,
+    description: []const u8,
+    location: ApiGameLocation,
+    joinDate: []const u8,
+};
+
+pub const ApiGameLocation = struct {
+    x: i32,
+    y: i32,
+};
+
 pub fn getUserRoom(allocator: std.mem.Allocator, uri: std.Uri, username: []const u8) !?std.json.Parsed(ApiRoom) {
     var url = std.ArrayList(u8).init(allocator);
     defer url.deinit();

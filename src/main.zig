@@ -56,11 +56,13 @@ pub fn main() !void {
                 }
             }
 
+            var level = try Lbp.getLevel(arena.allocator(), uri, player_status.value.data.levelId);
+
             var presence = Rpc.Packet.Presence{
                 .buttons = null,
                 .details = Rpc.Packet.ArrayString(128).create(switch (player_status.value.data.levelType) {
                     .story => "Playing a story level",
-                    .online => "Online",
+                    .online => "Playing a level",
                     .remote_moon => "Creating a level on someone elses Moon",
                     .moon_group => "Moon group",
                     .story_group => "Story group",
@@ -105,6 +107,13 @@ pub fn main() !void {
                     .size = &[2]i32{ @intCast(player_status.value.data.playerIds.len), 4 },
                 },
             };
+
+            if (level) |level_info| {
+                var stream = std.io.fixedBufferStream(&presence.details.buf);
+                try std.fmt.format(stream.writer(), "Playing {s}", .{level_info.value.data.title});
+                presence.details.len = stream.pos;
+            }
+
             try rpc_client.setPresence(presence);
 
             std.time.sleep(std.time.ns_per_s * 20);
