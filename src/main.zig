@@ -31,6 +31,8 @@ pub fn main() !void {
         }
     }
 
+    defer rpc_client.stop();
+
     while (true) {
         var arena = std.heap.ArenaAllocator.init(allocator);
         defer arena.deinit();
@@ -110,13 +112,17 @@ pub fn main() !void {
 
             if (level) |level_info| {
                 var details_stream = std.io.fixedBufferStream(&presence.details.buf);
-                try std.fmt.format(details_stream.writer(), "Playing {s}", .{level_info.value.data.title});
+                try std.fmt.format(details_stream.writer(), "Playing {s} by {s}", .{ level_info.value.data.title, level_info.value.data.publisher.username });
                 presence.details.len = details_stream.pos;
 
                 var large_image_stream = std.io.fixedBufferStream(&presence.assets.large_image.buf);
                 try uri.format("+", .{}, large_image_stream.writer());
                 try std.fmt.format(large_image_stream.writer(), "/api/v3/assets/{s}/image", .{level_info.value.data.iconHash});
                 presence.assets.large_image.len = large_image_stream.pos;
+
+                var large_text_stream = std.io.fixedBufferStream(&presence.assets.large_text.buf);
+                try std.fmt.format(large_text_stream.writer(), "{s} by {s}", .{ level_info.value.data.title, level_info.value.data.publisher.username });
+                presence.assets.large_text.len = large_text_stream.pos;
             }
 
             try rpc_client.setPresence(presence);
