@@ -109,9 +109,14 @@ pub fn main() !void {
             };
 
             if (level) |level_info| {
-                var stream = std.io.fixedBufferStream(&presence.details.buf);
-                try std.fmt.format(stream.writer(), "Playing {s}", .{level_info.value.data.title});
-                presence.details.len = stream.pos;
+                var details_stream = std.io.fixedBufferStream(&presence.details.buf);
+                try std.fmt.format(details_stream.writer(), "Playing {s}", .{level_info.value.data.title});
+                presence.details.len = details_stream.pos;
+
+                var large_image_stream = std.io.fixedBufferStream(&presence.assets.large_image.buf);
+                try uri.format("+", .{}, large_image_stream.writer());
+                try std.fmt.format(large_image_stream.writer(), "/api/v3/assets/{s}/image", .{level_info.value.data.iconHash});
+                presence.assets.large_image.len = large_image_stream.pos;
             }
 
             try rpc_client.setPresence(presence);
