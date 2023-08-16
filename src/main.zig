@@ -32,9 +32,10 @@ pub fn main() !void {
     }
 
     while (true) {
-        if (try Lbp.getUserRoom(allocator, uri, args[2])) |player_status| {
-            defer player_status.deinit();
+        var arena = std.heap.ArenaAllocator.init(allocator);
+        defer arena.deinit();
 
+        if (try Lbp.getUserRoom(arena.allocator(), uri, args[2])) |player_status| {
             if (!rpc_client.run_loop.load(.SeqCst)) {
                 std.debug.assert(rpc_thread == null);
 
