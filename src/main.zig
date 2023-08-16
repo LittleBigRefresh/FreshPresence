@@ -48,6 +48,11 @@ pub fn main() !void {
                         instance_info.value.data.richPresenceConfiguration.applicationId,
                     },
                 );
+
+                //Wait until we are connected
+                while (rpc_client.state != .connected) {
+                    std.time.sleep(std.time.ns_per_s);
+                }
             }
 
             var presence = Rpc.Packet.Presence{
@@ -100,6 +105,8 @@ pub fn main() !void {
                 },
             };
             try rpc_client.setPresence(presence);
+
+            std.time.sleep(std.time.ns_per_s * 20);
         } else {
             //If the loop is running,
             if (rpc_client.run_loop.load(.SeqCst)) {
@@ -111,9 +118,9 @@ pub fn main() !void {
                 //Set the thread to null, marking it no longer exists
                 rpc_thread = null;
             }
-        }
 
-        std.time.sleep(std.time.ns_per_s * 5);
+            std.time.sleep(std.time.ns_per_s * 60);
+        }
     }
 
     rpc_client.stop();
