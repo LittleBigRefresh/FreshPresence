@@ -16,6 +16,22 @@ pub fn main() !void {
     var instance_info = try Lbp.instanceInfo(allocator, uri);
     defer instance_info.deinit();
 
+    var qualified_fallback_asset = std.ArrayList(u8).init(allocator);
+    defer qualified_fallback_asset.deinit();
+
+    if (instance_info.value.data.richPresenceConfiguration.assetConfiguration.fallbackAsset) |fallback_asset| {
+        //TODO: replace this once a flag exists in the asset config
+        //If the asset length matches a SHA1 hex string,
+        if (fallback_asset.len == std.crypto.hash.Sha1.digest_length * 2) {
+            //Assume it is a server asset
+            try uri.format("+", .{}, qualified_fallback_asset.writer());
+            try std.fmt.format(qualified_fallback_asset.writer(), "/api/v3/assets/{s}/image", .{fallback_asset});
+        } else {
+            //Assume it is a discord asset
+            try qualified_fallback_asset.appendSlice(fallback_asset);
+        }
+    }
+
     std.debug.print("instanceName: {s}\n", .{instance_info.value.data.instanceName});
     std.debug.print("instanceDescription: {s}\n\n", .{instance_info.value.data.instanceDescription});
     std.debug.print("appid: {s}\n", .{instance_info.value.data.richPresenceConfiguration.applicationId});
@@ -58,8 +74,6 @@ pub fn main() !void {
                 }
             }
 
-            var level = try Lbp.getLevel(arena.allocator(), uri, player_status.value.data.levelId);
-
             var presence = Rpc.Packet.Presence{
                 .buttons = null,
                 .details = Rpc.Packet.ArrayString(128).create(switch (player_status.value.data.levelType) {
@@ -98,8 +112,11 @@ pub fn main() !void {
                 },
                 .secrets = null,
                 .assets = .{
-                    .large_image = Rpc.Packet.ArrayString(256).create("refresh"),
-                    .large_text = Rpc.Packet.ArrayString(128).create("refresh"),
+                    .large_image = Rpc.Packet.ArrayString(256).create(if (instance_info.value.data.richPresenceConfiguration.assetConfiguration.fallbackAsset != null)
+                        qualified_fallback_asset.items
+                    else
+                        "refresh"),
+                    .large_text = null,
                     .small_image = null,
                     .small_text = null,
                 },
@@ -110,19 +127,32 @@ pub fn main() !void {
                 },
             };
 
-            if (level) |level_info| {
-                var details_stream = std.io.fixedBufferStream(&presence.details.buf);
-                try std.fmt.format(details_stream.writer(), "Playing {s} by {s}", .{ level_info.value.data.title, level_info.value.data.publisher.username });
-                presence.details.len = details_stream.pos;
+            //If the user is on a level,
+            if (player_status.value.data.levelType == .online) {
+                //Grab the level information
+                var level = try Lbp.getLevel(arena.allocator(), uri, player_status.value.data.levelId);
 
-                var large_image_stream = std.io.fixedBufferStream(&presence.assets.large_image.buf);
-                try uri.format("+", .{}, large_image_stream.writer());
-                try std.fmt.format(large_image_stream.writer(), "/api/v3/assets/{s}/image", .{level_info.value.data.iconHash});
-                presence.assets.large_image.len = large_image_stream.pos;
+                //If the query returned information
+                if (level) |level_info| {
+                    var details_stream = std.io.fixedBufferStream(&presence.details.buf);
+                    try std.fmt.format(details_stream.writer(), "Playing {s} by {s}", .{ level_info.value.data.title, level_info.value.data.publisher.username });
+                    presence.details.len = details_stream.pos;
 
-                var large_text_stream = std.io.fixedBufferStream(&presence.assets.large_text.buf);
-                try std.fmt.format(large_text_stream.writer(), "{s} by {s}", .{ level_info.value.data.title, level_info.value.data.publisher.username });
-                presence.assets.large_text.len = large_text_stream.pos;
+                    if (level_info.value.data.iconHash.len > 0 and level_info.value.data.iconHash[0] != 'g') {
+                        presence.assets.large_image = undefined;
+
+                        var large_image_stream = std.io.fixedBufferStream(&presence.assets.large_image.?.buf);
+                        try uri.format("+", .{}, large_image_stream.writer());
+                        try std.fmt.format(large_image_stream.writer(), "/api/v3/assets/{s}/image", .{level_info.value.data.iconHash});
+                        presence.assets.large_image.?.len = large_image_stream.pos;
+                    }
+
+                    presence.assets.large_text = undefined;
+
+                    var large_text_stream = std.io.fixedBufferStream(&presence.assets.large_text.?.buf);
+                    try std.fmt.format(large_text_stream.writer(), "{s} by {s}", .{ level_info.value.data.title, level_info.value.data.publisher.username });
+                    presence.assets.large_text.?.len = large_text_stream.pos;
+                }
             }
 
             try rpc_client.setPresence(presence);
