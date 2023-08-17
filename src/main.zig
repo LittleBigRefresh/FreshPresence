@@ -18,7 +18,6 @@ pub fn main() !void {
 
     var qualified_fallback_asset = std.ArrayList(u8).init(allocator);
     defer qualified_fallback_asset.deinit();
-
     if (instance_info.value.data.richPresenceConfiguration.assetConfiguration.fallbackAsset) |fallback_asset| {
         //TODO: replace this once a flag exists in the asset config
         //If the asset length matches a SHA1 hex string,
@@ -29,6 +28,36 @@ pub fn main() !void {
         } else {
             //Assume it is a discord asset
             try qualified_fallback_asset.appendSlice(fallback_asset);
+        }
+    }
+
+    var qualified_pod_asset = std.ArrayList(u8).init(allocator);
+    defer qualified_pod_asset.deinit();
+    if (instance_info.value.data.richPresenceConfiguration.assetConfiguration.podAsset) |pod_asset| {
+        //TODO: replace this once a flag exists in the asset config
+        ////If the asset length matches a SHA1 hex string,
+        if (pod_asset.len == std.crypto.hash.Sha1.digest_length * 2) {
+            //Assume it is a server asset
+            try uri.format("+", .{}, qualified_pod_asset.writer());
+            try std.fmt.format(qualified_pod_asset.writer(), "/api/v3/assets/{s}/image", .{pod_asset});
+        } else {
+            //Assume it is a discord asset
+            try qualified_pod_asset.appendSlice(pod_asset);
+        }
+    }
+
+    var qualified_moon_asset = std.ArrayList(u8).init(allocator);
+    defer qualified_moon_asset.deinit();
+    if (instance_info.value.data.richPresenceConfiguration.assetConfiguration.moonAsset) |moon_asset| {
+        //TODO: replace this once a flag exists in the asset config
+        ////If the asset length matches a SHA1 hex string,
+        if (moon_asset.len == std.crypto.hash.Sha1.digest_length * 2) {
+            //Assume it is a server asset
+            try uri.format("+", .{}, qualified_moon_asset.writer());
+            try std.fmt.format(qualified_moon_asset.writer(), "/api/v3/assets/{s}/image", .{moon_asset});
+        } else {
+            //Assume it is a discord asset
+            try qualified_moon_asset.appendSlice(moon_asset);
         }
     }
 
@@ -127,32 +156,44 @@ pub fn main() !void {
                 },
             };
 
-            //If the user is on a level,
-            if (player_status.value.data.levelType == .online) {
-                //Grab the level information
-                var level = try Lbp.getLevel(arena.allocator(), uri, player_status.value.data.levelId);
+            switch (player_status.value.data.levelType) {
+                .online => {
+                    //Grab the level information
+                    var level = try Lbp.getLevel(arena.allocator(), uri, player_status.value.data.levelId);
 
-                //If the query returned information
-                if (level) |level_info| {
-                    var details_stream = std.io.fixedBufferStream(&presence.details.buf);
-                    try std.fmt.format(details_stream.writer(), "Playing {s} by {s}", .{ level_info.value.data.title, level_info.value.data.publisher.username });
-                    presence.details.len = details_stream.pos;
+                    //If the query returned information
+                    if (level) |level_info| {
+                        var details_stream = std.io.fixedBufferStream(&presence.details.buf);
+                        try std.fmt.format(details_stream.writer(), "Playing {s} by {s}", .{ level_info.value.data.title, level_info.value.data.publisher.username });
+                        presence.details.len = details_stream.pos;
 
-                    if (level_info.value.data.iconHash.len > 0 and level_info.value.data.iconHash[0] != 'g') {
-                        presence.assets.large_image = undefined;
+                        if (level_info.value.data.iconHash.len > 0 and level_info.value.data.iconHash[0] != 'g') {
+                            presence.assets.large_image = undefined;
 
-                        var large_image_stream = std.io.fixedBufferStream(&presence.assets.large_image.?.buf);
-                        try uri.format("+", .{}, large_image_stream.writer());
-                        try std.fmt.format(large_image_stream.writer(), "/api/v3/assets/{s}/image", .{level_info.value.data.iconHash});
-                        presence.assets.large_image.?.len = large_image_stream.pos;
+                            var large_image_stream = std.io.fixedBufferStream(&presence.assets.large_image.?.buf);
+                            try uri.format("+", .{}, large_image_stream.writer());
+                            try std.fmt.format(large_image_stream.writer(), "/api/v3/assets/{s}/image", .{level_info.value.data.iconHash});
+                            presence.assets.large_image.?.len = large_image_stream.pos;
+                        }
+
+                        presence.assets.large_text = undefined;
+
+                        var large_text_stream = std.io.fixedBufferStream(&presence.assets.large_text.?.buf);
+                        try std.fmt.format(large_text_stream.writer(), "{s} by {s}", .{ level_info.value.data.title, level_info.value.data.publisher.username });
+                        presence.assets.large_text.?.len = large_text_stream.pos;
                     }
-
-                    presence.assets.large_text = undefined;
-
-                    var large_text_stream = std.io.fixedBufferStream(&presence.assets.large_text.?.buf);
-                    try std.fmt.format(large_text_stream.writer(), "{s} by {s}", .{ level_info.value.data.title, level_info.value.data.publisher.username });
-                    presence.assets.large_text.?.len = large_text_stream.pos;
-                }
+                },
+                .moon => {
+                    if (instance_info.value.data.richPresenceConfiguration.assetConfiguration.podAsset) |_| {
+                        presence.assets.large_image = Rpc.Packet.ArrayString(256).create(qualified_moon_asset.items);
+                    }
+                },
+                .pod => {
+                    if (instance_info.value.data.richPresenceConfiguration.assetConfiguration.podAsset) |_| {
+                        presence.assets.large_image = Rpc.Packet.ArrayString(256).create(qualified_pod_asset.items);
+                    }
+                },
+                else => {},
             }
 
             try rpc_client.setPresence(presence);
