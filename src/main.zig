@@ -78,6 +78,31 @@ pub fn main() !void {
 
     defer rpc_client.stop();
 
+    const LevelInfo = struct {
+        id: i32,
+        name: Rpc.Packet.ArrayString(128),
+        publisher_username: Rpc.Packet.ArrayString(128),
+        icon_hash: Rpc.Packet.ArrayString(256),
+
+        pub fn update(_allocator: std.mem.Allocator, _uri: std.Uri, id: i32) !?@This() {
+            const level = try Lbp.getLevel(_allocator, _uri, id);
+
+            std.debug.print("updating level info\n", .{});
+
+            return if (level) |level_info|
+                @This(){
+                    .id = id,
+                    .name = Rpc.Packet.ArrayString(128).create(level_info.value.data.title),
+                    .publisher_username = Rpc.Packet.ArrayString(128).create(level_info.value.data.publisher.username),
+                    .icon_hash = Rpc.Packet.ArrayString(256).create(level_info.value.data.iconHash),
+                }
+            else
+                null;
+        }
+    };
+
+    var last_level_info: ?LevelInfo = null;
+
     while (true) {
         var arena = std.heap.ArenaAllocator.init(allocator);
         defer arena.deinit();
@@ -158,28 +183,35 @@ pub fn main() !void {
 
             switch (player_status.value.data.levelType) {
                 .online => {
-                    //Grab the level information
-                    var level = try Lbp.getLevel(arena.allocator(), uri, player_status.value.data.levelId);
+                    //If there was a level previously
+                    if (last_level_info) |last_level| {
+                        //And the level id is different,
+                        if (player_status.value.data.levelId != last_level.id) {
+                            last_level_info = try LevelInfo.update(arena.allocator(), uri, player_status.value.data.levelId);
+                        }
+                    } else {
+                        last_level_info = try LevelInfo.update(arena.allocator(), uri, player_status.value.data.levelId);
+                    }
 
-                    //If the query returned information
-                    if (level) |level_info| {
+                    if (last_level_info) |last_level| {
+                        //If the query returned information
                         var details_stream = std.io.fixedBufferStream(&presence.details.buf);
-                        try std.fmt.format(details_stream.writer(), "Playing {s} by {s}", .{ level_info.value.data.title, level_info.value.data.publisher.username });
+                        try std.fmt.format(details_stream.writer(), "Playing {s} by {s}", .{ last_level.name.slice(), last_level.publisher_username.slice() });
                         presence.details.len = details_stream.pos;
 
-                        if (level_info.value.data.iconHash.len > 0 and level_info.value.data.iconHash[0] != 'g') {
+                        if (last_level.icon_hash.len > 0 and last_level.icon_hash.buf[0] != 'g') {
                             presence.assets.large_image = undefined;
 
                             var large_image_stream = std.io.fixedBufferStream(&presence.assets.large_image.?.buf);
                             try uri.format("+", .{}, large_image_stream.writer());
-                            try std.fmt.format(large_image_stream.writer(), "/api/v3/assets/{s}/image", .{level_info.value.data.iconHash});
+                            try std.fmt.format(large_image_stream.writer(), "/api/v3/assets/{s}/image", .{last_level.icon_hash.slice()});
                             presence.assets.large_image.?.len = large_image_stream.pos;
                         }
 
                         presence.assets.large_text = undefined;
 
                         var large_text_stream = std.io.fixedBufferStream(&presence.assets.large_text.?.buf);
-                        try std.fmt.format(large_text_stream.writer(), "{s} by {s}", .{ level_info.value.data.title, level_info.value.data.publisher.username });
+                        try std.fmt.format(large_text_stream.writer(), "{s} by {s}", .{ last_level.name.slice(), last_level.publisher_username.slice() });
                         presence.assets.large_text.?.len = large_text_stream.pos;
                     }
                 },
