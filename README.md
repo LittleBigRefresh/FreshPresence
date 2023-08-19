@@ -26,7 +26,8 @@ Anyway, with the legal disclaimers out of the way...
 #### From Github Actions
 1. [Find the latest run](https://github.com/LittleBigRefresh/FreshPresence/actions)
 1. Download the artifact for your OS, extract it somewhere most convenient to you, and run it from a terminal
-##### Example: `.\FreshPresence.exe https://REFRESHINSTANCE/ USERNAME`
+1. Once it closes, update the `fresh_presence_config.json` file to your wanted settings, then save and close the file
+1. Run again from a terminal, it should now load the new config
 
 To update, you can simply repeat this process, overwriting the previous file.
 

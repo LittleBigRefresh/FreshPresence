@@ -33,7 +33,7 @@ This is usually done with the following command:
 Now, open the folder/workspace/solution with the IDE you chose. Explore the codebase, experiment, and have fun!
 
 To run the software in **DEBUG** mode, simply write: 
-`$ zig build run -- https://REFRESHINSTANCE/ USERNAME`
+`$ zig build run`
 
 To compile for a specific platform, you can append `-Dtarget=TARGET` to the build invocation, eg. `zig build -Dtarget=x86_64-linux`
 

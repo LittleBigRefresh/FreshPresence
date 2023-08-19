@@ -3,15 +3,68 @@ const Rpc = @import("rpc");
 
 const Lbp = @import("lbp.zig");
 
+const Config = struct {
+    instance_url: []const u8,
+    username: []const u8,
+    pub fn deinit(self: Config, allocator: std.mem.Allocator) void {
+        allocator.free(self.instance_url);
+        allocator.free(self.username);
+    }
+};
+
+/// Checks for an existing config, returns `true` if there is a config, `false` if not
+/// Writes a default config if missing
+pub fn getConfig(allocator: std.mem.Allocator) !Config {
+    var cwd = std.fs.cwd();
+
+    const config_path = "fresh_presence_config.json";
+
+    var file = cwd.openFile(config_path, .{}) catch |err| {
+        if (err == std.fs.File.OpenError.FileNotFound) {
+            const default_config = Config{
+                .username = "Username",
+                .instance_url = "https://refresh.jvyden.xyz",
+            };
+
+            var file = try cwd.createFile(config_path, .{});
+            defer file.close();
+
+            var buffered_writer = std.io.bufferedWriter(file.writer());
+            try std.json.stringify(default_config, .{}, buffered_writer.writer());
+            try buffered_writer.flush();
+
+            return error.ConfigWrittenPleaseUpdate;
+        } else {
+            return err;
+        }
+    };
+    defer file.close();
+
+    var buffered_reader = std.io.bufferedReader(file.reader());
+
+    var reader = std.json.reader(allocator, buffered_reader.reader());
+    defer reader.deinit();
+
+    const temp_config = try std.json.parseFromTokenSource(Config, allocator, &reader, .{});
+    defer temp_config.deinit();
+
+    const config = Config{
+        .username = try allocator.dupe(u8, temp_config.value.username),
+        .instance_url = try allocator.dupe(u8, temp_config.value.instance_url),
+    };
+
+    return config;
+}
+
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer if (gpa.deinit() == .leak) @panic("MEMORY LEAK");
     var allocator = gpa.allocator();
 
-    var args = try std.process.argsAlloc(allocator);
-    defer std.process.argsFree(allocator, args);
+    const config = try getConfig(allocator);
+    defer config.deinit(allocator);
 
-    var uri = try std.Uri.parse(args[1]);
+    var uri = try std.Uri.parse(config.instance_url);
 
     var instance_info = try Lbp.instanceInfo(allocator, uri);
     defer instance_info.deinit();
@@ -84,7 +137,7 @@ pub fn main() !void {
         defer arena.deinit();
 
         //Try to get the room the user is in
-        if (try Lbp.getUserRoom(arena.allocator(), uri, args[2])) |player_status| {
+        if (try Lbp.getUserRoom(arena.allocator(), uri, config.username)) |player_status| {
             //If the rpc client is stopped,
             if (!rpc_client.run_loop.load(.SeqCst)) {
                 std.debug.assert(rpc_thread == null);
