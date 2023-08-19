@@ -16,50 +16,23 @@ pub fn main() !void {
     var instance_info = try Lbp.instanceInfo(allocator, uri);
     defer instance_info.deinit();
 
-    var qualified_fallback_asset = std.ArrayList(u8).init(allocator);
-    defer qualified_fallback_asset.deinit();
-    if (instance_info.value.data.richPresenceConfiguration.assetConfiguration.fallbackAsset) |fallback_asset| {
-        //TODO: replace this once a flag exists in the asset config
-        //If the asset length matches a SHA1 hex string,
-        if (fallback_asset.len == std.crypto.hash.Sha1.digest_length * 2) {
-            //Assume it is a server asset
-            try uri.format("+", .{}, qualified_fallback_asset.writer());
-            try std.fmt.format(qualified_fallback_asset.writer(), "/api/v3/assets/{s}/image", .{fallback_asset});
-        } else {
-            //Assume it is a discord asset
-            try qualified_fallback_asset.appendSlice(fallback_asset);
-        }
-    }
+    //Qualify the fallback asset
+    var qualified_fallback_asset: ?[]const u8 = null;
+    defer if (qualified_fallback_asset) |asset| allocator.free(asset);
+    if (instance_info.value.data.richPresenceConfiguration.assetConfiguration.fallbackAsset) |fallback_asset|
+        qualified_fallback_asset = try Lbp.qualifyAsset(allocator, uri, fallback_asset);
 
-    var qualified_pod_asset = std.ArrayList(u8).init(allocator);
-    defer qualified_pod_asset.deinit();
-    if (instance_info.value.data.richPresenceConfiguration.assetConfiguration.podAsset) |pod_asset| {
-        //TODO: replace this once a flag exists in the asset config
-        ////If the asset length matches a SHA1 hex string,
-        if (pod_asset.len == std.crypto.hash.Sha1.digest_length * 2) {
-            //Assume it is a server asset
-            try uri.format("+", .{}, qualified_pod_asset.writer());
-            try std.fmt.format(qualified_pod_asset.writer(), "/api/v3/assets/{s}/image", .{pod_asset});
-        } else {
-            //Assume it is a discord asset
-            try qualified_pod_asset.appendSlice(pod_asset);
-        }
-    }
+    //Qualify the pod asset
+    var qualified_pod_asset: ?[]const u8 = null;
+    defer if (qualified_pod_asset) |asset| allocator.free(asset);
+    if (instance_info.value.data.richPresenceConfiguration.assetConfiguration.podAsset) |pod_asset|
+        qualified_pod_asset = try Lbp.qualifyAsset(allocator, uri, pod_asset);
 
-    var qualified_moon_asset = std.ArrayList(u8).init(allocator);
-    defer qualified_moon_asset.deinit();
-    if (instance_info.value.data.richPresenceConfiguration.assetConfiguration.moonAsset) |moon_asset| {
-        //TODO: replace this once a flag exists in the asset config
-        ////If the asset length matches a SHA1 hex string,
-        if (moon_asset.len == std.crypto.hash.Sha1.digest_length * 2) {
-            //Assume it is a server asset
-            try uri.format("+", .{}, qualified_moon_asset.writer());
-            try std.fmt.format(qualified_moon_asset.writer(), "/api/v3/assets/{s}/image", .{moon_asset});
-        } else {
-            //Assume it is a discord asset
-            try qualified_moon_asset.appendSlice(moon_asset);
-        }
-    }
+    //Qualify the moon asset
+    var qualified_moon_asset: ?[]const u8 = null;
+    defer if (qualified_moon_asset) |asset| allocator.free(asset);
+    if (instance_info.value.data.richPresenceConfiguration.assetConfiguration.moonAsset) |moon_asset|
+        qualified_moon_asset = try Lbp.qualifyAsset(allocator, uri, moon_asset);
 
     std.debug.print("instanceName: {s}\n", .{instance_info.value.data.instanceName});
     std.debug.print("instanceDescription: {s}\n\n", .{instance_info.value.data.instanceDescription});
@@ -166,8 +139,8 @@ pub fn main() !void {
                 },
                 .secrets = null,
                 .assets = .{
-                    .large_image = Rpc.Packet.ArrayString(256).create(if (instance_info.value.data.richPresenceConfiguration.assetConfiguration.fallbackAsset != null)
-                        qualified_fallback_asset.items
+                    .large_image = Rpc.Packet.ArrayString(256).create(if (qualified_fallback_asset) |asset|
+                        asset
                     else
                         "refresh"),
                     .large_text = null,
@@ -216,13 +189,13 @@ pub fn main() !void {
                     }
                 },
                 .moon => {
-                    if (instance_info.value.data.richPresenceConfiguration.assetConfiguration.podAsset) |_| {
-                        presence.assets.large_image = Rpc.Packet.ArrayString(256).create(qualified_moon_asset.items);
+                    if (qualified_moon_asset) |asset| {
+                        presence.assets.large_image = Rpc.Packet.ArrayString(256).create(asset);
                     }
                 },
                 .pod => {
-                    if (instance_info.value.data.richPresenceConfiguration.assetConfiguration.podAsset) |_| {
-                        presence.assets.large_image = Rpc.Packet.ArrayString(256).create(qualified_pod_asset.items);
+                    if (qualified_pod_asset) |asset| {
+                        presence.assets.large_image = Rpc.Packet.ArrayString(256).create(asset);
                     }
                 },
                 else => {},

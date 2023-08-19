@@ -224,3 +224,20 @@ pub const ApiRoomPlayer = struct {
     username: []const u8,
     userId: ?[]const u8,
 };
+
+pub fn qualifyAsset(allocator: std.mem.Allocator, uri: std.Uri, asset: []const u8) ![]const u8 {
+    var qualified_asset = std.ArrayList(u8).init(allocator);
+
+    //TODO: replace this once a flag exists in the asset config
+    //If the asset length matches a SHA1 hex string,
+    if (asset.len == std.crypto.hash.Sha1.digest_length * 2) {
+        //Assume it is a server asset
+        try uri.format("+", .{}, qualified_asset.writer());
+        try std.fmt.format(qualified_asset.writer(), "/api/v3/assets/{s}/image", .{asset});
+    } else {
+        //Assume it is a discord asset
+        try qualified_asset.appendSlice(asset);
+    }
+
+    return try qualified_asset.toOwnedSlice();
+}
