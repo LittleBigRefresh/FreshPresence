@@ -44,12 +44,12 @@ pub fn main() !void {
 
     var rpc_thread: ?std.Thread = null;
     defer {
-        if (rpc_thread) |thread| {
+        //Stop the RPC client
+        rpc_client.stop();
+        //Join the RPC thread, if applicable
+        if (rpc_thread) |thread|
             thread.join();
-        }
     }
-
-    defer rpc_client.stop();
 
     const LevelInfo = struct {
         id: i32,
@@ -57,11 +57,14 @@ pub fn main() !void {
         publisher_username: Rpc.Packet.ArrayString(128),
         icon_hash: Rpc.Packet.ArrayString(256),
 
-        pub fn update(_allocator: std.mem.Allocator, _uri: std.Uri, id: i32) !?@This() {
+        /// Creates a new level info struct, pulling level info from the API
+        /// Returns null when the level is not found
+        pub fn create(_allocator: std.mem.Allocator, _uri: std.Uri, id: i32) !?@This() {
             const level = try Lbp.getLevel(_allocator, _uri, id);
 
             std.debug.print("updating level info\n", .{});
 
+            //If the level was found in the API, return the info, else return null
             return if (level) |level_info|
                 @This(){
                     .id = id,
@@ -80,12 +83,15 @@ pub fn main() !void {
         var arena = std.heap.ArenaAllocator.init(allocator);
         defer arena.deinit();
 
+        //Try to get the room the user is in
         if (try Lbp.getUserRoom(arena.allocator(), uri, args[2])) |player_status| {
+            //If the rpc client is stopped,
             if (!rpc_client.run_loop.load(.SeqCst)) {
                 std.debug.assert(rpc_thread == null);
 
                 std.debug.print("starting rpc thread\n", .{});
 
+                //Spawn the RPC thread
                 rpc_thread = try std.Thread.spawn(
                     .{},
                     runRpcThread,
@@ -156,25 +162,30 @@ pub fn main() !void {
 
             switch (player_status.value.data.levelType) {
                 .online => {
-                    //If there was a level previously
+                    //If there was a level previously,
                     if (last_level_info) |last_level| {
                         //And the level id is different,
                         if (player_status.value.data.levelId != last_level.id) {
-                            last_level_info = try LevelInfo.update(arena.allocator(), uri, player_status.value.data.levelId);
+                            //Update the last level info
+                            last_level_info = try LevelInfo.create(arena.allocator(), uri, player_status.value.data.levelId);
                         }
                     } else {
-                        last_level_info = try LevelInfo.update(arena.allocator(), uri, player_status.value.data.levelId);
+                        //Update the last level info
+                        last_level_info = try LevelInfo.create(arena.allocator(), uri, player_status.value.data.levelId);
                     }
 
+                    //If we have level info
                     if (last_level_info) |last_level| {
-                        //If the query returned information
+                        presence.details = undefined;
                         var details_stream = std.io.fixedBufferStream(&presence.details.buf);
                         try std.fmt.format(details_stream.writer(), "Playing {s} by {s}", .{ last_level.name.slice(), last_level.publisher_username.slice() });
                         presence.details.len = details_stream.pos;
 
+                        //If the icon hash is not a GUID
                         if (last_level.icon_hash.len > 0 and last_level.icon_hash.buf[0] != 'g') {
                             presence.assets.large_image = undefined;
 
+                            //Set the asset to the URL for that asset on the API
                             var large_image_stream = std.io.fixedBufferStream(&presence.assets.large_image.?.buf);
                             try uri.format("+", .{}, large_image_stream.writer());
                             try std.fmt.format(large_image_stream.writer(), "/api/v3/assets/{s}/image", .{last_level.icon_hash.slice()});
@@ -182,27 +193,32 @@ pub fn main() !void {
                         }
 
                         presence.assets.large_text = undefined;
-
                         var large_text_stream = std.io.fixedBufferStream(&presence.assets.large_text.?.buf);
                         try std.fmt.format(large_text_stream.writer(), "{s} by {s}", .{ last_level.name.slice(), last_level.publisher_username.slice() });
                         presence.assets.large_text.?.len = large_text_stream.pos;
                     }
                 },
                 .moon => {
+                    //If the moon asset is qualified,
                     if (qualified_moon_asset) |asset| {
+                        //Set the large image asset to the qualified moon asset
                         presence.assets.large_image = Rpc.Packet.ArrayString(256).create(asset);
                     }
                 },
                 .pod => {
+                    //If the pod asset is qualified,
                     if (qualified_pod_asset) |asset| {
+                        //Set the large image asset to the qualified pod asset
                         presence.assets.large_image = Rpc.Packet.ArrayString(256).create(asset);
                     }
                 },
                 else => {},
             }
 
+            //Apply the new presence
             try rpc_client.setPresence(presence);
 
+            //Sleep for 20s
             std.time.sleep(std.time.ns_per_s * 20);
         } else {
             //If the loop is running,
@@ -216,11 +232,10 @@ pub fn main() !void {
                 rpc_thread = null;
             }
 
+            //Sleep for 60s
             std.time.sleep(std.time.ns_per_s * 60);
         }
     }
-
-    rpc_client.stop();
 }
 
 fn runRpcThread(rpc_client: *Rpc, app_id: []const u8) void {
