@@ -37,12 +37,12 @@ pub fn getConfig(allocator: std.mem.Allocator) !Config {
             try std.json.stringify(default_config, .{}, buffered_writer.writer());
             try buffered_writer.flush();
 
-            if (c.boxerShow(
+            _ = c.boxerShow(
                 "Config created at " ++ config_path ++ "! Please check your config!",
                 "Update Config!",
                 c.kBoxerDefaultStyle,
                 c.kBoxerDefaultStyle,
-            ) == c.BoxerSelectionError) {}
+            );
 
             std.os.exit(0);
         } else {
@@ -80,6 +80,35 @@ pub fn main() !void {
     var instance_info = try Lbp.instanceInfo(allocator, uri);
     defer instance_info.deinit();
 
+    std.debug.print("instanceName: {s}\n", .{instance_info.value.data.instanceName});
+    std.debug.print("instanceDescription: {s}\n\n", .{instance_info.value.data.instanceDescription});
+    std.debug.print("appid: {s}\n", .{instance_info.value.data.richPresenceConfiguration.applicationId});
+    std.debug.print("partyIdPrefix: {s}\n\n", .{instance_info.value.data.richPresenceConfiguration.partyIdPrefix});
+
+    var user_info = try Lbp.getUser(allocator, uri, config.username);
+
+    if (user_info) |user| {
+        std.debug.print("Found user {s}\n", .{config.username});
+
+        user.deinit();
+    } else {
+        var text = std.ArrayList(u8).init(allocator);
+        defer text.deinit();
+
+        try std.fmt.format(text.writer(), "User {s} not found! Check your config.\x00", .{config.username});
+
+        std.debug.print("No user found by the name {s}!\n", .{config.username});
+
+        _ = c.boxerShow(
+            text.items.ptr,
+            "User Not Found!",
+            c.kBoxerDefaultStyle,
+            c.kBoxerDefaultStyle,
+        );
+
+        return;
+    }
+
     //Qualify the fallback asset
     var qualified_fallback_asset: ?[]const u8 = null;
     defer if (qualified_fallback_asset) |asset| allocator.free(asset);
@@ -97,11 +126,6 @@ pub fn main() !void {
     defer if (qualified_moon_asset) |asset| allocator.free(asset);
     if (instance_info.value.data.richPresenceConfiguration.assetConfiguration.moonAsset) |moon_asset|
         qualified_moon_asset = try Lbp.qualifyAsset(allocator, uri, moon_asset);
-
-    std.debug.print("instanceName: {s}\n", .{instance_info.value.data.instanceName});
-    std.debug.print("instanceDescription: {s}\n\n", .{instance_info.value.data.instanceDescription});
-    std.debug.print("appid: {s}\n", .{instance_info.value.data.richPresenceConfiguration.applicationId});
-    std.debug.print("partyIdPrefix: {s}\n\n", .{instance_info.value.data.richPresenceConfiguration.partyIdPrefix});
 
     var rpc_client = try Rpc.init(allocator, &ready);
     defer rpc_client.deinit();

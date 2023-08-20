@@ -153,6 +153,22 @@ pub fn getUserRoom(allocator: std.mem.Allocator, uri: std.Uri, username: []const
     return parsed;
 }
 
+pub fn getUser(allocator: std.mem.Allocator, uri: std.Uri, username: []const u8) !?std.json.Parsed(ApiResponse(ApiGameUser)) {
+    var url = std.ArrayList(u8).init(allocator);
+    defer url.deinit();
+    try std.fmt.format(url.writer(), "/api/v3/users/name/{s}", .{username});
+
+    var parsed = makeRequestAndParse(allocator, ApiResponse(ApiGameUser), uri, url.items) catch |err| {
+        if (err == RequestError.ErrorCode404) {
+            return null;
+        } else {
+            return err;
+        }
+    };
+
+    return parsed;
+}
+
 pub const ApiRoom = ApiResponse(struct {
     roomId: []const u8,
     playerIds: []const ApiRoomPlayer,
