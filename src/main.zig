@@ -4,8 +4,9 @@ const Rpc = @import("rpc");
 const Lbp = @import("lbp.zig");
 
 const Config = struct {
-    instance_url: []const u8,
-    username: []const u8,
+    instance_url: []const u8 = "https://refresh.jvyden.xyz/",
+    username: []const u8 = "Username",
+    close_upon_game_exit: bool = false,
     pub fn deinit(self: Config, allocator: std.mem.Allocator) void {
         allocator.free(self.instance_url);
         allocator.free(self.username);
@@ -25,10 +26,7 @@ pub fn getConfig(allocator: std.mem.Allocator) !Config {
 
     var file = cwd.openFile(config_path, .{}) catch |err| {
         if (err == std.fs.File.OpenError.FileNotFound) {
-            const default_config = Config{
-                .username = "Username",
-                .instance_url = "https://refresh.jvyden.xyz",
-            };
+            const default_config = Config{};
 
             var file = try cwd.createFile(config_path, .{});
             defer file.close();
@@ -62,6 +60,7 @@ pub fn getConfig(allocator: std.mem.Allocator) !Config {
     const config = Config{
         .username = try allocator.dupe(u8, temp_config.value.username),
         .instance_url = try allocator.dupe(u8, temp_config.value.instance_url),
+        .close_upon_game_exit = temp_config.value.close_upon_game_exit,
     };
 
     return config;
@@ -336,6 +335,10 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
                 rpc_thread.?.join();
                 //Set the thread to null, marking it no longer exists
                 rpc_thread = null;
+            }
+
+            if (config.close_upon_game_exit) {
+                return;
             }
 
             //Sleep for 60s
