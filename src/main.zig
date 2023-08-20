@@ -40,8 +40,8 @@ pub fn getConfig(allocator: std.mem.Allocator) !Config {
             _ = c.boxerShow(
                 "Config created at " ++ config_path ++ "! Please check your config!",
                 "Update Config!",
-                c.kBoxerDefaultStyle,
-                c.kBoxerDefaultStyle,
+                c.BoxerStyleInfo,
+                c.BoxerButtonsQuit,
             );
 
             std.os.exit(0);
@@ -72,6 +72,24 @@ pub fn main() !void {
     defer if (gpa.deinit() == .leak) @panic("MEMORY LEAK");
     var allocator = gpa.allocator();
 
+    runApp(allocator) catch |err| {
+        var text = std.ArrayList(u8).init(allocator);
+        defer text.deinit();
+
+        try std.fmt.format(text.writer(), "Unhandled error {s}!\x00", .{@errorName(err)});
+
+        _ = c.boxerShow(
+            text.items.ptr,
+            "Unhandled Error!",
+            c.BoxerStyleError,
+            c.BoxerButtonsQuit,
+        );
+
+        return err;
+    };
+}
+
+pub fn runApp(allocator: std.mem.Allocator) !void {
     const config = try getConfig(allocator);
     defer config.deinit(allocator);
 
@@ -102,8 +120,8 @@ pub fn main() !void {
         _ = c.boxerShow(
             text.items.ptr,
             "User Not Found!",
-            c.kBoxerDefaultStyle,
-            c.kBoxerDefaultStyle,
+            c.BoxerStyleError,
+            c.BoxerButtonsQuit,
         );
 
         return;
