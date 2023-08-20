@@ -12,6 +12,10 @@ const Config = struct {
     }
 };
 
+const c = @cImport({
+    @cInclude("boxer/boxer.h");
+});
+
 /// Checks for an existing config, returns `true` if there is a config, `false` if not
 /// Writes a default config if missing
 pub fn getConfig(allocator: std.mem.Allocator) !Config {
@@ -33,7 +37,14 @@ pub fn getConfig(allocator: std.mem.Allocator) !Config {
             try std.json.stringify(default_config, .{}, buffered_writer.writer());
             try buffered_writer.flush();
 
-            return error.ConfigWrittenPleaseUpdate;
+            if (c.boxerShow(
+                "Config created at " ++ config_path ++ "! Please check your config!",
+                "Update Config!",
+                c.kBoxerDefaultStyle,
+                c.kBoxerDefaultStyle,
+            ) == c.BoxerSelectionError) {}
+
+            std.os.exit(0);
         } else {
             return err;
         }

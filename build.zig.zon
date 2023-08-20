@@ -6,5 +6,13 @@
             .url = "https://github.com/Beyley/zig-discord/archive/d5af305592f5712a0731554e2afd10afbea293cc.tar.gz",
             .hash = "1220af3afee845035705462f357f7ca70b964787a94ff3ae39a6ee779f3cca452880",
         },
+        .zBoxer = .{
+            .url = "https://github.com/Beyley/zBoxer/archive/8ba46a2fe50d658f1406c9681b8b931df24edf37.tar.gz",
+            .hash = "1220f0d56067829895dfbedbae59cc9579a484f7fee8f93a7db5a1d2eadcfcbf97d9",
+        },
+        .xcode_frameworks = .{
+            .url = "https://github.com/hexops/xcode-frameworks-pkg/archive/d486474a6af7fafd89e8314e0bf7eca4709f811b.tar.gz",
+            .hash = "1220293eae4bf67a7c27a18a8133621337cde91a97bc6859a9431b3b2d4217dfb5fb",
+        },
     },
 }
