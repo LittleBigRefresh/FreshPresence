@@ -12,6 +12,7 @@ jobs:
         target: [ native, x86_64-linux-gnu, x86_64-linux-musl, aarch64-linux-gnu, x86_64-macos, aarch64-macos, x86_64-windows, aarch64-windows ]
     name: ${{ matrix.os }}, ${{ matrix.target }}-${{ matrix.mode }}
     runs-on: ${{ matrix.os }}
+    concurrency: ${{ matrix.target }}
     steps:
       - uses: actions/checkout@v3
         name: Checkout repo
