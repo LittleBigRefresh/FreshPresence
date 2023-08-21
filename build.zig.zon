@@ -18,5 +18,9 @@
             .url = "https://github.com/Beyley/zini/archive/48af291bf585a71960e8fc4dcbaf42e92a79d5df.tar.gz",
             .hash = "12207734f3073b9e9cd73a477e3ab59b47956da56f6e198acde61aa73a946d6aa181",
         },
+        .known_folders = .{
+            .url = "https://github.com/ziglibs/known-folders/archive/fa75e1bc672952efa0cf06160bbd942b47f6d59b.tar.gz",
+            .hash = "122048992ca58a78318b6eba4f65c692564be5af3b30fbef50cd4abeda981b2e7fa5",
+        },
     },
 }

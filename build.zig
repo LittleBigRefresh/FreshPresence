@@ -24,6 +24,7 @@ pub fn build(b: *std.Build) !void {
     exe.linkLibC();
     exe.addModule("rpc", b.dependency("zig-discord", .{}).module("rpc"));
     exe.addModule("zini", b.dependency("zini", .{}).module("zini"));
+    exe.addModule("known-folders", b.dependency("known_folders", .{}).module("known-folders"));
     b.installArtifact(exe);
 
     const run_cmd = b.addRunArtifact(exe);
