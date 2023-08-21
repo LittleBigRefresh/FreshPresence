@@ -19,6 +19,9 @@ pub fn build(b: *std.Build) !void {
     if (target.getOsTag() == .macos) {
         @import("xcode_frameworks").addPaths(b, exe);
     }
+    if (optimize == .ReleaseSmall) {
+        exe.strip = true;
+    }
     exe.linkLibrary(zboxer_lib);
     try exe.include_dirs.appendSlice(zboxer_lib.include_dirs.items);
     exe.linkLibC();
