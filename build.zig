@@ -23,6 +23,7 @@ pub fn build(b: *std.Build) !void {
     try exe.include_dirs.appendSlice(zboxer_lib.include_dirs.items);
     exe.linkLibC();
     exe.addModule("rpc", b.dependency("zig-discord", .{}).module("rpc"));
+    exe.addModule("zini", b.dependency("zini", .{}).module("zini"));
     b.installArtifact(exe);
 
     const run_cmd = b.addRunArtifact(exe);

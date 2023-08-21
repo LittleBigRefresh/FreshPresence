@@ -1,4 +1,5 @@
 const std = @import("std");
+const zini = @import("zini");
 
 const c = @import("c.zig").c;
 
@@ -18,7 +19,7 @@ pub fn deinit(self: Self, allocator: std.mem.Allocator) void {
 pub fn getConfig(allocator: std.mem.Allocator) !Self {
     var cwd = std.fs.cwd();
 
-    const config_path = "fresh_presence_config.json";
+    const config_path = "fresh_presence_config.ini";
 
     var file = cwd.openFile(config_path, .{}) catch |err| {
         if (err == std.fs.File.OpenError.FileNotFound) {
@@ -28,7 +29,7 @@ pub fn getConfig(allocator: std.mem.Allocator) !Self {
             defer file.close();
 
             var buffered_writer = std.io.bufferedWriter(file.writer());
-            try std.json.stringify(default_config, .{}, buffered_writer.writer());
+            try zini.stringify(buffered_writer.writer(), default_config);
             try buffered_writer.flush();
 
             _ = c.boxerShow(
@@ -47,15 +48,14 @@ pub fn getConfig(allocator: std.mem.Allocator) !Self {
 
     var buffered_reader = std.io.bufferedReader(file.reader());
 
-    var reader = std.json.reader(allocator, buffered_reader.reader());
-    defer reader.deinit();
+    var arena = std.heap.ArenaAllocator.init(allocator);
+    defer arena.deinit();
 
-    const temp_config = try std.json.parseFromTokenSource(Self, allocator, &reader, .{});
-    defer temp_config.deinit();
+    const temp_config = try zini.readStruct(buffered_reader.reader(), Self, arena.allocator());
 
     return Self{
-        .username = try allocator.dupe(u8, temp_config.value.username),
-        .instance_url = try allocator.dupe(u8, temp_config.value.instance_url),
-        .close_upon_game_exit = temp_config.value.close_upon_game_exit,
+        .username = try allocator.dupe(u8, temp_config.username),
+        .instance_url = try allocator.dupe(u8, temp_config.instance_url),
+        .close_upon_game_exit = temp_config.close_upon_game_exit,
     };
 }
