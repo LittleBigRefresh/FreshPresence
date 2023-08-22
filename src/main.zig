@@ -65,6 +65,12 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
         return;
     }
 
+    var profile_url = std.ArrayList(u8).init(allocator);
+    defer profile_url.deinit();
+
+    try uri.format("+", .{}, profile_url.writer());
+    try std.fmt.format(profile_url.writer(), "/user/{s}", .{config.username});
+
     //Qualify the fallback asset
     var qualified_fallback_asset: ?[]const u8 = null;
     defer if (qualified_fallback_asset) |asset| allocator.free(asset);
@@ -152,7 +158,12 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
             }
 
             var presence = Rpc.Packet.Presence{
-                .buttons = null,
+                .buttons = &.{
+                    Rpc.Packet.Presence.Button{
+                        .label = "Profile",
+                        .url = profile_url.items,
+                    },
+                },
                 .details = Rpc.Packet.ArrayString(128).create(switch (player_status.value.data.levelType) {
                     .story => "Playing a story level",
                     .online => "Playing a level",
