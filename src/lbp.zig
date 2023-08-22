@@ -72,6 +72,7 @@ pub const InstanceInfo = ApiResponse(struct {
         },
     },
     maintenanceModeEnabled: bool,
+    grafanaDashboardUrl: []const u8,
 });
 
 pub fn getLevel(allocator: std.mem.Allocator, uri: std.Uri, id: i32) !?std.json.Parsed(ApiGameLevel) {
