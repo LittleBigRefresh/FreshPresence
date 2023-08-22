@@ -5,6 +5,12 @@ const known_folders = @import("known-folders");
 
 const c = @import("c.zig").c;
 
+const win32 = @cImport({
+    @cDefine("WIN32_LEAN_AND_MEAN", "1");
+    @cInclude("windows.h");
+    @cInclude("shellapi.h");
+});
+
 const Self = @This();
 
 instance_url: []const u8 = "https://refresh.jvyden.xyz/",
@@ -60,17 +66,23 @@ pub fn getConfig(allocator: std.mem.Allocator) !Self {
                 c.BoxerStyleInfo,
                 c.BoxerButtonsYesNo,
             ) == c.BoxerSelectionYes) {
-                var child_process = std.ChildProcess.init(
-                    switch (builtin.os.tag) {
-                        .windows => &.{full_path},
-                        .linux => &.{ "xdg-open", full_path },
-                        .macos => &.{ "open", full_path },
-                        else => @compileError("Unknown platform!"),
-                    },
-                    allocator,
-                );
-                try child_process.spawn();
-                _ = try child_process.wait();
+                if (builtin.os.tag == .windows) {
+                    var windows_path = try std.unicode.utf8ToUtf16LeWithNull(allocator, full_path);
+                    defer allocator.free(windows_path);
+
+                    _ = win32.ShellExecuteW(null, std.unicode.utf8ToUtf16LeStringLiteral("edit"), windows_path, null, null, 0);
+                } else {
+                    var child_process = std.ChildProcess.init(
+                        switch (builtin.os.tag) {
+                            .linux => &.{ "xdg-open", full_path },
+                            .macos => &.{ "open", full_path },
+                            else => @compileError("Unknown platform!"),
+                        },
+                        allocator,
+                    );
+                    try child_process.spawn();
+                    _ = try child_process.wait();
+                }
             }
 
             std.os.exit(0);
