@@ -106,6 +106,7 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
         name: Rpc.Packet.ArrayString(128),
         publisher_username: Rpc.Packet.ArrayString(128),
         icon_hash: Rpc.Packet.ArrayString(256),
+        site_url: Rpc.Packet.ArrayString(256),
 
         /// Creates a new level info struct, pulling level info from the API
         /// Returns null when the level is not found
@@ -121,6 +122,14 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
                     .name = Rpc.Packet.ArrayString(128).create(level_info.value.data.title),
                     .publisher_username = Rpc.Packet.ArrayString(128).create(level_info.value.data.publisher.username),
                     .icon_hash = Rpc.Packet.ArrayString(256).create(level_info.value.data.iconHash),
+                    .site_url = blk: {
+                        var str: Rpc.Packet.ArrayString(256) = undefined;
+                        var stream = std.io.fixedBufferStream(&str.buf);
+                        try _uri.format("+", .{}, stream.writer());
+                        try std.fmt.format(stream.writer(), "/level/{d}", .{id});
+                        str.len = stream.pos;
+                        break :blk str;
+                    },
                 }
             else
                 null;
@@ -158,12 +167,7 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
             }
 
             var presence = Rpc.Packet.Presence{
-                .buttons = &.{
-                    Rpc.Packet.Presence.Button{
-                        .label = "Profile",
-                        .url = profile_url.items,
-                    },
-                },
+                .buttons = undefined,
                 .details = Rpc.Packet.ArrayString(128).create(switch (player_status.value.data.levelType) {
                     .story => "Playing a story level",
                     .online => "Playing a level",
@@ -268,6 +272,26 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
                     }
                 },
                 else => {},
+            }
+
+            if (last_level_info) |level_info| {
+                presence.buttons = &.{
+                    Rpc.Packet.Presence.Button{
+                        .label = Rpc.Packet.ArrayString(128).create("Profile"),
+                        .url = Rpc.Packet.ArrayString(256).create(profile_url.items),
+                    },
+                    Rpc.Packet.Presence.Button{
+                        .label = Rpc.Packet.ArrayString(128).create("Level"),
+                        .url = level_info.site_url,
+                    },
+                };
+            } else {
+                presence.buttons = &.{
+                    Rpc.Packet.Presence.Button{
+                        .label = Rpc.Packet.ArrayString(128).create("Profile"),
+                        .url = Rpc.Packet.ArrayString(256).create(profile_url.items),
+                    },
+                };
             }
 
             //Apply the new presence
