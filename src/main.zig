@@ -42,11 +42,11 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
     std.debug.print("partyIdPrefix: {s}\n\n", .{instance_info.value.data.richPresenceConfiguration.partyIdPrefix});
 
     var user_info = try Lbp.getUser(allocator, uri, config.username);
+    defer if (user_info) |user|
+        user.deinit();
 
     if (user_info) |user| {
-        std.debug.print("Found user {s}\n", .{config.username});
-
-        user.deinit();
+        std.debug.print("Found user {s}\n", .{user.value.data.username});
     } else {
         var text = std.ArrayList(u8).init(allocator);
         defer text.deinit();
@@ -277,11 +277,11 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
             if (last_level_info) |level_info| {
                 presence.buttons = &.{
                     Rpc.Packet.Presence.Button{
-                        .label = Rpc.Packet.ArrayString(128).create("Profile"),
+                        .label = try Rpc.Packet.ArrayString(128).create_from_format("View {s}'s Profile", .{user_info.?.value.data.username}),
                         .url = Rpc.Packet.ArrayString(256).create(profile_url.items),
                     },
                     Rpc.Packet.Presence.Button{
-                        .label = Rpc.Packet.ArrayString(128).create("Level"),
+                        .label = Rpc.Packet.ArrayString(128).create("View Level's Page"),
                         .url = level_info.site_url,
                     },
                 };
