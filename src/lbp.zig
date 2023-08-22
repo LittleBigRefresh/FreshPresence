@@ -34,7 +34,10 @@ fn makeRequestAndParse(allocator: std.mem.Allocator, comptime T: type, uri: std.
 
     var json_reader = std.json.reader(allocator, reader);
     defer json_reader.deinit();
-    return try std.json.parseFromTokenSource(T, allocator, &json_reader, .{});
+    return try std.json.parseFromTokenSource(T, allocator, &json_reader, .{
+        //If we have no runtime safety, ignore unknown fields
+        .ignore_unknown_fields = !std.debug.runtime_safety,
+    });
 }
 
 pub fn ApiResponse(comptime T: type) type {
