@@ -1,12 +1,13 @@
 # FreshPresence
 
-A tiny stay-resident app providing Discord Rich Presence for the LittleBigPlanet games on Refresh-based servers.
+A tiny background app providing Discord Rich Presence for the LittleBigPlanet games on [Refresh](https://github.com/LittleBigRefresh/Refresh)-based servers.
 
 [![Discord](https://img.shields.io/discord/1049223665243389953?label=Discord)](https://discord.gg/xN5yKdxmWG)
 
-<p align="center">
-  <img width="600" src="https://github.com/LittleBigRefresh/Branding/blob/main/logos/refresh_type_transparent.png">
-</p>
+## Compatibility
+FreshPresence is only designed for the [Refresh v3 API](https://github.com/LittleBigRefresh/Refresh), so FreshPresence will not work with alternative servers.
+
+Additionally, LBP1 will only have limited rich presence.
 
 ## Running
 
@@ -25,14 +26,11 @@ Anyway, with the legal disclaimers out of the way...
 
 #### From Github Actions
 1. [Find the latest run](https://github.com/LittleBigRefresh/FreshPresence/actions)
-1. Download the artifact for your OS, extract it somewhere most convenient to you, and run it from a terminal
-1. Once it closes, update the `fresh_presence_config.json` file to your wanted settings, then save and close the file
-1. Run again from a terminal, it should now load the new config
+1. Download the artifact for your OS, extract it somewhere most convenient to you, and run it.
+1. Once it closes, update the `fresh_presence_config.ini` file to your preferred settings, set your username, then save and close the file.
+1. Open FreshPresence once more, and it should now show your profile.
 
 To update, you can simply repeat this process, overwriting the previous file.
-
-### Important notes
-FreshPresence will only work with servers that implement the Refresh v3 API, so Lighthouse servers will not work with FreshPresence
 
 ## It's on fire! What do I do?
 FreshPresence isn't perfect, so it's not exactly uncommon to run into bugs. If you'd like, you can [create an issue](https://github.com/LittleBigRefresh/FreshPresence/issues/new) here on GitHub or join our [Discord](https://discord.gg/xN5yKdxmWG) for support.
