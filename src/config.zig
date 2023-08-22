@@ -1,4 +1,5 @@
 const std = @import("std");
+const builtin = @import("builtin");
 const zini = @import("zini");
 const known_folders = @import("known-folders");
 
@@ -46,15 +47,27 @@ pub fn getConfig(allocator: std.mem.Allocator) !Self {
             var msg = std.ArrayList(u8).init(allocator);
             defer msg.deinit();
             //Write out the message
-            try std.fmt.format(msg.writer(), "Config created at {s}!\nPlease check your config!\x00", .{full_path});
+            try std.fmt.format(msg.writer(), "Config created at {s}!\nWould you like to open the config in your default text editor?\x00", .{full_path});
 
             //Display the message to the user
-            _ = c.boxerShow(
+            if (c.boxerShow(
                 msg.items.ptr,
                 "Update Config!",
                 c.BoxerStyleInfo,
-                c.BoxerButtonsQuit,
-            );
+                c.BoxerButtonsYesNo,
+            ) == c.BoxerSelectionYes) {
+                var child_process = std.ChildProcess.init(
+                    switch (builtin.os.tag) {
+                        .windows => &.{full_path},
+                        .linux => &.{ "xdg-open", full_path },
+                        .macos => &.{ "open", full_path },
+                        else => @compileError("Unknown platform!"),
+                    },
+                    allocator,
+                );
+                try child_process.spawn();
+                _ = try child_process.wait();
+            }
 
             std.os.exit(0);
         } else {
