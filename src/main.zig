@@ -156,7 +156,7 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
                 .details = Rpc.Packet.ArrayString(128).create(switch (player_status.value.data.levelType) {
                     .story => "Playing a story level",
                     .online => "Playing a level",
-                    .remote_moon => "Creating a level on someone elses Moon",
+                    .remote_moon => "Creating on a remote Moon",
                     .moon_group => "Moon group",
                     .story_group => "Story group",
                     .dlc_level => "Playing a DLC level",
@@ -170,7 +170,7 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
                     .adventure_level_local => "Adventure level local",
                     .adventure_area_level => "Adventure area level",
                     .fake => "On a fake level",
-                    .moon => "Creating a level on the Moon",
+                    .moon => "Creating a level",
                     .pod => "In the pod",
                     else => "Ingame", //Fallback to generic when theres an unknown value
                 }),
