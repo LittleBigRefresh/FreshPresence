@@ -30,12 +30,16 @@ pub fn getConfig(allocator: std.mem.Allocator) !Self {
         if (err == std.fs.File.OpenError.FileNotFound) {
             const default_config = Self{};
 
+            //Create the new config file
             var file = try (config_dir orelse cwd).createFile(config_filename, .{});
-            defer file.close();
 
             var buffered_writer = std.io.bufferedWriter(file.writer());
+            //Serialize our config as ini into the file
             try zini.stringify(buffered_writer.writer(), default_config);
             try buffered_writer.flush();
+
+            //Close before realpath so that windows is happy
+            file.close();
 
             //Get the full path of the config
             var full_path = try (config_dir orelse cwd).realpathAlloc(allocator, config_filename);
@@ -47,7 +51,7 @@ pub fn getConfig(allocator: std.mem.Allocator) !Self {
             var msg = std.ArrayList(u8).init(allocator);
             defer msg.deinit();
             //Write out the message
-            try std.fmt.format(msg.writer(), "Config created at {s}!\nWould you like to open the config in your default text editor?\x00", .{full_path});
+            try std.fmt.format(msg.writer(), "Config created at {s}!\nWould you like to open the config for editing?\x00", .{full_path});
 
             //Display the message to the user
             if (c.boxerShow(
