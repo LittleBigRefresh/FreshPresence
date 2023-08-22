@@ -25,12 +25,6 @@ pub fn getConfig(allocator: std.mem.Allocator) !Self {
 
     const config_filename = "fresh_presence_config.ini";
 
-    //Get the full path of the config
-    var full_path = try (config_dir orelse cwd).realpathAlloc(allocator, config_filename);
-    defer allocator.free(full_path);
-
-    std.debug.print("using config from {s}\n", .{full_path});
-
     var file = (config_dir orelse cwd).openFile(config_filename, .{}) catch |err| {
         if (err == std.fs.File.OpenError.FileNotFound) {
             const default_config = Self{};
@@ -41,6 +35,12 @@ pub fn getConfig(allocator: std.mem.Allocator) !Self {
             var buffered_writer = std.io.bufferedWriter(file.writer());
             try zini.stringify(buffered_writer.writer(), default_config);
             try buffered_writer.flush();
+
+            //Get the full path of the config
+            var full_path = try (config_dir orelse cwd).realpathAlloc(allocator, config_filename);
+            defer allocator.free(full_path);
+
+            std.debug.print("created config at {s}\n", .{full_path});
 
             //Create a list to store the message we will display
             var msg = std.ArrayList(u8).init(allocator);
@@ -62,6 +62,12 @@ pub fn getConfig(allocator: std.mem.Allocator) !Self {
         }
     };
     defer file.close();
+
+    //Get the full path of the config
+    var full_path = try (config_dir orelse cwd).realpathAlloc(allocator, config_filename);
+    defer allocator.free(full_path);
+
+    std.debug.print("using config from {s}\n", .{full_path});
 
     var buffered_reader = std.io.bufferedReader(file.reader());
 
