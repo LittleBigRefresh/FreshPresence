@@ -65,6 +65,7 @@ pub const InstanceInfo = ApiResponse(struct {
         applicationId: []const u8,
         partyIdPrefix: []const u8,
         assetConfiguration: struct {
+            useApplicationAssets: bool,
             podAsset: ?[]const u8,
             moonAsset: ?[]const u8,
             remoteMoonAsset: ?[]const u8,
@@ -245,12 +246,11 @@ pub const ApiRoomPlayer = struct {
     userId: ?[]const u8,
 };
 
-pub fn qualifyAsset(allocator: std.mem.Allocator, uri: std.Uri, asset: []const u8) ![]const u8 {
+pub fn qualifyAsset(allocator: std.mem.Allocator, uri: std.Uri, asset: []const u8, use_application_asset: bool) ![]const u8 {
     var qualified_asset = std.ArrayList(u8).init(allocator);
 
-    //TODO: replace this once a flag exists in the asset config
     //If the asset length matches a SHA1 hex string,
-    if (asset.len == std.crypto.hash.Sha1.digest_length * 2) {
+    if (!use_application_asset) {
         //Assume it is a server asset
         try uri.format("+", .{}, qualified_asset.writer());
         try std.fmt.format(qualified_asset.writer(), "/api/v3/assets/{s}/image", .{asset});

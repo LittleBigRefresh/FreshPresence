@@ -75,19 +75,19 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
     var qualified_fallback_asset: ?[]const u8 = null;
     defer if (qualified_fallback_asset) |asset| allocator.free(asset);
     if (instance_info.value.data.richPresenceConfiguration.assetConfiguration.fallbackAsset) |fallback_asset|
-        qualified_fallback_asset = try Lbp.qualifyAsset(allocator, uri, fallback_asset);
+        qualified_fallback_asset = try Lbp.qualifyAsset(allocator, uri, fallback_asset, instance_info.value.data.richPresenceConfiguration.assetConfiguration.useApplicationAssets);
 
     //Qualify the pod asset
     var qualified_pod_asset: ?[]const u8 = null;
     defer if (qualified_pod_asset) |asset| allocator.free(asset);
     if (instance_info.value.data.richPresenceConfiguration.assetConfiguration.podAsset) |pod_asset|
-        qualified_pod_asset = try Lbp.qualifyAsset(allocator, uri, pod_asset);
+        qualified_pod_asset = try Lbp.qualifyAsset(allocator, uri, pod_asset, instance_info.value.data.richPresenceConfiguration.assetConfiguration.useApplicationAssets);
 
     //Qualify the moon asset
     var qualified_moon_asset: ?[]const u8 = null;
     defer if (qualified_moon_asset) |asset| allocator.free(asset);
     if (instance_info.value.data.richPresenceConfiguration.assetConfiguration.moonAsset) |moon_asset|
-        qualified_moon_asset = try Lbp.qualifyAsset(allocator, uri, moon_asset);
+        qualified_moon_asset = try Lbp.qualifyAsset(allocator, uri, moon_asset, instance_info.value.data.richPresenceConfiguration.assetConfiguration.useApplicationAssets);
 
     var rpc_client = try Rpc.init(allocator, &ready);
     defer rpc_client.deinit();
