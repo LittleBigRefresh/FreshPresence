@@ -102,6 +102,8 @@ pub const ApiGameLevel = ApiResponse(struct {
     iconHash: []const u8,
     description: []const u8,
     location: ApiGameLocation,
+    rootLevelHash: []const u8,
+    gameVersion: u32,
     publishDate: []const u8,
     updateDate: []const u8,
     minPlayers: u3,
