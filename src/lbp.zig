@@ -27,6 +27,7 @@ fn makeRequestAndParse(allocator: std.mem.Allocator, comptime T: type, uri: std.
     if (request.response.status == .not_found) {
         return RequestError.ErrorCode404;
     } else if (request.response.status != .ok) {
+        std.debug.print("got unknown response code {s}\n", .{@tagName(request.response.status)});
         return RequestError.UnknownHttpErrorCode;
     }
 
