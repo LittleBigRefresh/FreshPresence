@@ -16,8 +16,11 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .optimize = optimize,
     });
+    //If we are on MacOS, we need to import the xcode frameworks
     if (target.getOsTag() == .macos) {
-        @import("xcode_frameworks").addPaths(b, exe);
+        try exe.include_dirs.appendSlice(zboxer_lib.include_dirs.items);
+        try exe.c_macros.appendSlice(zboxer_lib.c_macros.items);
+        try exe.lib_paths.appendSlice(zboxer_lib.lib_paths.items);
     }
     if (optimize == .ReleaseSmall) {
         exe.strip = true;

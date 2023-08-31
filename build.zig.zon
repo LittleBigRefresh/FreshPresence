@@ -10,10 +10,6 @@
             .url = "https://github.com/Beyley/zBoxer/archive/8ba46a2fe50d658f1406c9681b8b931df24edf37.tar.gz",
             .hash = "1220f0d56067829895dfbedbae59cc9579a484f7fee8f93a7db5a1d2eadcfcbf97d9",
         },
-        .xcode_frameworks = .{
-            .url = "https://github.com/hexops/xcode-frameworks-pkg/archive/d486474a6af7fafd89e8314e0bf7eca4709f811b.tar.gz",
-            .hash = "1220293eae4bf67a7c27a18a8133621337cde91a97bc6859a9431b3b2d4217dfb5fb",
-        },
         .zini = .{
             .url = "https://github.com/Beyley/zini/archive/48af291bf585a71960e8fc4dcbaf42e92a79d5df.tar.gz",
             .hash = "12207734f3073b9e9cd73a477e3ab59b47956da56f6e198acde61aa73a946d6aa181",
