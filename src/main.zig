@@ -5,11 +5,33 @@ const Lbp = @import("lbp.zig");
 const c = @import("c.zig").c;
 const Config = @import("config.zig");
 
+pub const std_options = struct { 
+    pub fn logFn(
+        comptime message_level: std.log.Level,
+        comptime scope: @Type(.EnumLiteral),
+        comptime format: []const u8,
+        args: anytype,
+    ) void {
+        const color = switch (message_level) {
+            .err => "[1;31m",
+            .warn => "[1;93m",
+            .debug => "[1;35m",
+            .info => "[1;37m",
+        };
+        const level_txt = comptime message_level.asText();
+        const prefix2 = if (scope == .default) ": " else "(" ++ @tagName(scope) ++ "): ";
+        const stderr = std.io.getStdErr().writer();
+        std.debug.getStderrMutex().lock();
+        defer std.debug.getStderrMutex().unlock();
+        nosuspend stderr.print("{c}" ++ color ++ level_txt ++ prefix2 ++ format ++ "{c}[0m\n", .{std.ascii.control_code.esc} ++ args ++ .{std.ascii.control_code.esc}) catch return;
+    }
+};
+
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer if (gpa.deinit() == .leak) @panic("MEMORY LEAK");
     var allocator = gpa.allocator();
-
+    
     runApp(allocator) catch |err| {
         var text = std.ArrayList(u8).init(allocator);
         defer text.deinit();

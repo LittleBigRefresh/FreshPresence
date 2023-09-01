@@ -3,8 +3,8 @@
     .version = "0.0.0",
     .dependencies = .{
         .@"zig-discord" = .{
-            .url = "https://github.com/Beyley/zig-discord/archive/2a74d527ae6bfebb7e2b6f13690470f91a368da3.tar.gz",
-            .hash = "1220e274e39137d8f7d0036acf714823188e2027b9c244bf0109cca6b530a26bddbb",
+            .url = "https://github.com/Beyley/zig-discord/archive/26c067a2f3bf025d5ff7b4651874c2fcd9f32084.tar.gz",
+            .hash = "1220a422802b288416847c6f1eda9b7fb6539ad482a9a8267a9815430e27cfeb3952",
         },
         .zBoxer = .{
             .url = "https://github.com/Beyley/zBoxer/archive/8ba46a2fe50d658f1406c9681b8b931df24edf37.tar.gz",
