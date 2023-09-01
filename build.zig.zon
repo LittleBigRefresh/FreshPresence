@@ -20,7 +20,7 @@
         },
         .xcode_frameworks = .{
             .url = "https://github.com/hexops/xcode-frameworks-pkg/archive/d486474a6af7fafd89e8314e0bf7eca4709f811b.tar.gz",
-            .hash = "1220293eae4bf67a7c27a18a8133621337cde91a97bc6859a9431b3b2d4217dfb5fb",
+            .hash = "12201a72bc167c934a2994db539c98dbdaca45ca6d9fbb6047a3614e4e13546a723b",
         },
     },
 }
