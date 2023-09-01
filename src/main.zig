@@ -324,7 +324,25 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
 fn runRpcThread(rpc_client: *Rpc, app_id: []const u8) void {
     rpc_client.run(.{
         .client_id = app_id,
-    }) catch unreachable;
+    }) catch |err| {
+        var text = std.ArrayList(u8).init(std.heap.c_allocator);
+        defer text.deinit();
+
+        if (err == error.ConnectionRefused or err == error.FileNotFound) {
+            std.fmt.format(text.writer(), "Unable to connect to Discord RPC!\x00", .{}) catch unreachable;
+        } else std.fmt.format(text.writer(), "Unhandled error on RPC thread {s}!\x00", .{@errorName(err)}) catch unreachable;
+
+        _ = c.boxerShow(
+            text.items.ptr,
+            "Unhandled Error!",
+            c.BoxerStyleError,
+            c.BoxerButtonsQuit,
+        );
+        
+        std.log.err("rpc client err: {s}", .{@errorName(err)});
+
+        err catch unreachable;
+    };
 }
 
 fn ready(rpc_client: *Rpc) anyerror!void {
