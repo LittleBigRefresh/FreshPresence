@@ -51,7 +51,7 @@ pub fn getConfig(allocator: std.mem.Allocator) !Self {
             var full_path = try (config_dir orelse cwd).realpathAlloc(allocator, config_filename);
             defer allocator.free(full_path);
 
-            std.debug.print("created config at {s}\n", .{full_path});
+            std.log.info("Created config file at path {s}", .{full_path});
 
             //Create a list to store the message we will display
             var msg = std.ArrayList(u8).init(allocator);
@@ -96,7 +96,7 @@ pub fn getConfig(allocator: std.mem.Allocator) !Self {
     var full_path = try (config_dir orelse cwd).realpathAlloc(allocator, config_filename);
     defer allocator.free(full_path);
 
-    std.debug.print("using config from {s}\n", .{full_path});
+    std.log.info("Reading config from {s}", .{full_path});
 
     var buffered_reader = std.io.bufferedReader(file.reader());
 

@@ -36,24 +36,24 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
     var instance_info = try Lbp.instanceInfo(allocator, uri);
     defer instance_info.deinit();
 
-    std.debug.print("instanceName: {s}\n", .{instance_info.value.data.instanceName});
-    std.debug.print("instanceDescription: {s}\n\n", .{instance_info.value.data.instanceDescription});
-    std.debug.print("appid: {s}\n", .{instance_info.value.data.richPresenceConfiguration.applicationId});
-    std.debug.print("partyIdPrefix: {s}\n\n", .{instance_info.value.data.richPresenceConfiguration.partyIdPrefix});
+    std.log.info("Connected to instance {s}", .{instance_info.value.data.instanceName});
 
     var user_info = try Lbp.getUser(allocator, uri, config.username);
     defer if (user_info) |user|
         user.deinit();
 
     if (user_info) |user| {
-        std.debug.print("Found user {s}\n", .{user.value.data.username});
+        std.log.info("Found user {s} with id {s}", .{
+            user.value.data.username,
+            user.value.data.userId,
+        });
     } else {
         var text = std.ArrayList(u8).init(allocator);
         defer text.deinit();
 
         try std.fmt.format(text.writer(), "User {s} not found! Check your config.\x00", .{config.username});
 
-        std.debug.print("No user found by the name {s}!\n", .{config.username});
+        std.log.err("No user found by the name {s}!", .{config.username});
 
         _ = c.boxerShow(
             text.items.ptr,
@@ -113,7 +113,7 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
         pub fn create(_allocator: std.mem.Allocator, _uri: std.Uri, id: i32) !?@This() {
             const level = try Lbp.getLevel(_allocator, _uri, id);
 
-            std.debug.print("updating level info\n", .{});
+            std.log.debug("updating level info", .{});
 
             //If the level was found in the API, return the info, else return null
             return if (level) |level_info|
@@ -148,7 +148,7 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
             if (!rpc_client.run_loop.load(.SeqCst)) {
                 std.debug.assert(rpc_thread == null);
 
-                std.debug.print("starting rpc thread\n", .{});
+                std.log.debug("starting rpc thread", .{});
 
                 //Spawn the RPC thread
                 rpc_thread = try std.Thread.spawn(
@@ -302,7 +302,7 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
         } else {
             //If the loop is running,
             if (rpc_client.run_loop.load(.SeqCst)) {
-                std.debug.print("ending rpc thread\n", .{});
+                std.log.debug("ending rpc thread", .{});
                 //Tell the RPC client to stop
                 rpc_client.stop();
                 //Join the thread, waiting for it to end
