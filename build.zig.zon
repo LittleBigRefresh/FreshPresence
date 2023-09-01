@@ -3,7 +3,7 @@
     .version = "0.0.0",
     .dependencies = .{
         .@"zig-discord" = .{
-            .url = "https://github.com/Beyley/zig-discord/archive/26c067a2f3bf025d5ff7b4651874c2fcd9f32084.tar.gz",
+            .url = "https://github.com/Beyley/zig-discord/archive/e18cde362e25c095336d531e08df490905804d38.tar.gz",
             .hash = "1220a422802b288416847c6f1eda9b7fb6539ad482a9a8267a9815430e27cfeb3952",
         },
         .zBoxer = .{
