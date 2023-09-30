@@ -19,7 +19,7 @@ fn makeRequestAndParse(allocator: std.mem.Allocator, comptime T: type, uri: std.
     //Create a request to the Instance v3 API to get server info
     var request = try client.request(.GET, new_url, .{ .allocator = allocator }, .{});
     defer request.deinit();
-    try request.start();
+    try request.start(.{});
 
     //Wait for the response
     try request.wait();
