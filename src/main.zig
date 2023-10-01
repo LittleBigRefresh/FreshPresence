@@ -1,11 +1,12 @@
 const std = @import("std");
+const builtin = @import("builtin");
 const Rpc = @import("rpc");
 
 const Lbp = @import("lbp.zig");
 const c = @import("c.zig").c;
 const Config = @import("config.zig");
 
-pub const std_options = struct { 
+pub const std_options = struct {
     pub fn logFn(
         comptime message_level: std.log.Level,
         comptime scope: @Type(.EnumLiteral),
@@ -25,13 +26,15 @@ pub const std_options = struct {
         defer std.debug.getStderrMutex().unlock();
         nosuspend stderr.print("{c}" ++ color ++ level_txt ++ prefix2 ++ format ++ "{c}[0m\n", .{std.ascii.control_code.esc} ++ args ++ .{std.ascii.control_code.esc}) catch return;
     }
+
+    pub const log_level = if (builtin.mode == .Debug) .debug else .info;
 };
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer if (gpa.deinit() == .leak) @panic("MEMORY LEAK");
     var allocator = gpa.allocator();
-    
+
     runApp(allocator) catch |err| {
         var text = std.ArrayList(u8).init(allocator);
         defer text.deinit();
@@ -360,7 +363,7 @@ fn runRpcThread(rpc_client: *Rpc, app_id: []const u8) void {
             c.BoxerStyleError,
             c.BoxerButtonsQuit,
         );
-        
+
         std.log.err("rpc client err: {s}", .{@errorName(err)});
 
         err catch unreachable;
