@@ -117,6 +117,14 @@ pub const ApiGameLevel = ApiResponse(struct {
     hearts: i32,
     uniquePlays: i32,
     teamPicked: bool,
+    levelType: enum(u8) {
+        normal = 0,
+        versus = 1,
+        cutscene = 2,
+    },
+    isLocked: bool,
+    isSubLevel: bool,
+    isCopyable: bool,
 });
 
 pub const ApiGameSkillReward = struct {
