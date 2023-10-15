@@ -7,8 +7,8 @@
             .hash = "122064b18beed5aac15b259c20f188401db5b2eebcae9ae99680f09e78d2e5cee928",
         },
         .zBoxer = .{
-            .url = "https://github.com/Beyley/zBoxer/archive/0041ed285a33abcc6a41e5381f8da2423e4974c8.tar.gz",
-            .hash = "1220a892a8c5abeadb3754a65bf4c0176dc7e3db193d13ba272af3c27cb66e23f19f",
+            .url = "https://github.com/Beyley/zBoxer/archive/5b559cff447c654f9fe57c7b3c0ba9cfb655ef4b.tar.gz",
+            .hash = "12201edf78b182f8b1e4b0909d415ebbc7c648f957a7b27707746aec9f0d73b9adb4",
         },
         .zini = .{
             .url = "https://github.com/Beyley/zini/archive/48af291bf585a71960e8fc4dcbaf42e92a79d5df.tar.gz",
@@ -19,8 +19,13 @@
             .hash = "122048992ca58a78318b6eba4f65c692564be5af3b30fbef50cd4abeda981b2e7fa5",
         },
         .xcode_frameworks = .{
-            .url = "https://github.com/hexops/xcode-frameworks-pkg/archive/f8b854f9a1f4b4602b4f998ee42588d524d44e52.tar.gz",
-            .hash = "1220ab440d1b8484038d619f743ef6a71e3683d13152eae941aa2d6bcb12fcea3135",
+            .url = "https://github.com/der-teufel-programming/xcode-frameworks-pkg/archive/8e01bf7edf3d0295a6ec6f12c374f430506a12f9.tar.gz",
+            .hash = "1220f1d9bded5649fcd8892128d162fe4cf31ea70f2fa67a956cb9ccbd19fe64067c",
         },
+    },
+    .paths = .{
+        "src/",
+        "build.zig/",
+        "LICENSE",
     },
 }
