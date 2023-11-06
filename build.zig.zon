@@ -23,8 +23,8 @@
             .hash = "122051b3c616c62d55a82207c1cb76e2264b26e8378f56b1e5376d7684bd13616589",
         },
         .refresh_api = .{
-            .url = "https://github.com/LittleBigRefresh/refresh-api-zig/archive/4a4aa2b9e5b7fdb77827c51b1999d99bb7d6614b.tar.gz",
-            .hash = "122041fed4926eeeaa38b75ef8fe1026f4f1c16cc261e333ae5fb5ca3f34d152cb61",
+            .url = "https://github.com/LittleBigRefresh/refresh-api-zig/archive/fca1b8354eafd50bbcc36f5adc5cf0e94207bb6d.tar.gz",
+            .hash = "12204226d97211230ee3bab6374775fc46464fc34bf75b46f3ac0c4bcb6393837aaf",
         },
     },
     .paths = .{

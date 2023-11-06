@@ -251,7 +251,7 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
                         // .fake => "On a fake level",
                         .moon => "Creating a level",
                         .pod => "In the pod",
-                        // else => "Ingame", //Fallback to generic when theres an unknown value
+                        else => "Ingame", //Fallback to generic when theres an unknown value
                     }),
                     .state = Rpc.Packet.ArrayString(128).create(switch (room.game) {
                         .little_big_planet_1 => "Playing LittleBigPlanet 1",
@@ -260,7 +260,7 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
                         .little_big_planet_vita => "Playing LittleBigPlanet on Vita",
                         .little_big_planet_psp => "Playing LittleBigPlanet on PSP",
                         .website => "Joined from the website",
-                        // else => "Playing LittleBigPlanet", //Fallback to generic when theres an unknown value
+                        else => "Playing LittleBigPlanet", //Fallback to generic when theres an unknown value
                     }),
                     .timestamps = .{
                         .start = null,
