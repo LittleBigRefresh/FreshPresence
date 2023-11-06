@@ -3,12 +3,12 @@
     .version = "0.0.0",
     .dependencies = .{
         .@"zig-discord" = .{
-            .url = "https://github.com/Beyley/zig-discord/archive/8cb14f10a68889da2c5e452731da286cb927c47d.tar.gz",
-            .hash = "122064b18beed5aac15b259c20f188401db5b2eebcae9ae99680f09e78d2e5cee928",
+            .url = "https://github.com/Beyley/zig-discord/archive/fdd066607b51273cdaf49eb2f21ea8957f602c07.tar.gz",
+            .hash = "1220f3dbc1ca2363df655adebfae12d03c2b6e9b02a0959cdc8d187a9447608f9970",
         },
         .zBoxer = .{
-            .url = "https://github.com/Beyley/zBoxer/archive/5b559cff447c654f9fe57c7b3c0ba9cfb655ef4b.tar.gz",
-            .hash = "12201edf78b182f8b1e4b0909d415ebbc7c648f957a7b27707746aec9f0d73b9adb4",
+            .url = "https://github.com/Beyley/zBoxer/archive/9801620f2763cc5f4d2f9eeaaafbb347d2b6f05f.tar.gz",
+            .hash = "1220e98a7d3873585aa43a07ba4a009cc48c348f6840eacdb0b71cca0275a9854f79",
         },
         .zini = .{
             .url = "https://github.com/Beyley/zini/archive/48af291bf585a71960e8fc4dcbaf42e92a79d5df.tar.gz",
@@ -19,8 +19,12 @@
             .hash = "122048992ca58a78318b6eba4f65c692564be5af3b30fbef50cd4abeda981b2e7fa5",
         },
         .xcode_frameworks = .{
-            .url = "https://github.com/der-teufel-programming/xcode-frameworks-pkg/archive/8e01bf7edf3d0295a6ec6f12c374f430506a12f9.tar.gz",
-            .hash = "1220f1d9bded5649fcd8892128d162fe4cf31ea70f2fa67a956cb9ccbd19fe64067c",
+            .url = "https://github.com/hexops/xcode-frameworks/archive/8a920385383cc4c0a2a4f55b084d402a9400a5a8.tar.gz",
+            .hash = "122051b3c616c62d55a82207c1cb76e2264b26e8378f56b1e5376d7684bd13616589",
+        },
+        .refresh_api = .{
+            .url = "https://github.com/LittleBigRefresh/refresh-api-zig/archive/4a4aa2b9e5b7fdb77827c51b1999d99bb7d6614b.tar.gz",
+            .hash = "122041fed4926eeeaa38b75ef8fe1026f4f1c16cc261e333ae5fb5ca3f34d152cb61",
         },
     },
     .paths = .{

@@ -10,15 +10,18 @@ pub fn build(b: *std.Build) !void {
     });
     const zboxer_lib = zboxer.artifact("boxer");
 
+    const refresh_api_zig = b.dependency("refresh_api", .{});
+
     const exe = b.addExecutable(.{
         .name = "FreshPresence",
         .root_source_file = .{ .path = "src/main.zig" },
         .target = target,
         .optimize = optimize,
     });
+    exe.addModule("api", refresh_api_zig.module("refresh-api-zig"));
     //If we are on MacOS, we need to import the xcode frameworks
     if (target.getOsTag() == .macos) {
-        @import("xcode_frameworks").addPaths(b, exe);
+        @import("xcode_frameworks").addPaths(exe);
     }
     if (optimize == .ReleaseSmall) {
         exe.strip = true;
