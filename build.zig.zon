@@ -15,8 +15,8 @@
             .hash = "12206034994a0c046e78ad904fd7ff57f9e63abda96b6e1da292b28f1f15d6874bd2",
         },
         .known_folders = .{
-            .url = "https://github.com/ziglibs/known-folders/archive/855473062efac722624737f1adc56f9c0dd92017.tar.gz",
-            .hash = "1220f9d9dd88b1352b1a2bde4a96f547a1591d66ad0a9d76854d0c2c7fa59eef2508",
+            .url = "https://github.com/ziglibs/known-folders/archive/fa6271bad6bdc5fb1173824a88855b9268ea6f3d.tar.gz",
+            .hash = "122002462f37b67a54fa1ab712d870d4637dae0d94437c0077b148e1fb75616c573d",
         },
         .xcode_frameworks = .{
             .url = "https://github.com/hexops/xcode-frameworks/archive/8a920385383cc4c0a2a4f55b084d402a9400a5a8.tar.gz",
