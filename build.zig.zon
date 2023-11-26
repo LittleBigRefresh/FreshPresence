@@ -3,28 +3,28 @@
     .version = "0.0.0",
     .dependencies = .{
         .@"zig-discord" = .{
-            .url = "https://github.com/Beyley/zig-discord/archive/fdd066607b51273cdaf49eb2f21ea8957f602c07.tar.gz",
-            .hash = "1220f3dbc1ca2363df655adebfae12d03c2b6e9b02a0959cdc8d187a9447608f9970",
+            .url = "https://github.com/Beyley/zig-discord/archive/1b22ad77c35af056fc8f9855b2ebb02ba97ef631.tar.gz",
+            .hash = "12201228d44f411284ed4ebfa49525f9323f58afe2598e74423794d2a2c2ec592cf7",
         },
         .zBoxer = .{
             .url = "https://github.com/Beyley/zBoxer/archive/9801620f2763cc5f4d2f9eeaaafbb347d2b6f05f.tar.gz",
             .hash = "1220e98a7d3873585aa43a07ba4a009cc48c348f6840eacdb0b71cca0275a9854f79",
         },
         .zini = .{
-            .url = "https://github.com/Beyley/zini/archive/48af291bf585a71960e8fc4dcbaf42e92a79d5df.tar.gz",
-            .hash = "12207734f3073b9e9cd73a477e3ab59b47956da56f6e198acde61aa73a946d6aa181",
+            .url = "https://github.com/Beyley/zini/archive/a7bdca3a9e9f9fd4feb62a79d10e3d902ac20e0b.tar.gz",
+            .hash = "12206034994a0c046e78ad904fd7ff57f9e63abda96b6e1da292b28f1f15d6874bd2",
         },
         .known_folders = .{
-            .url = "https://github.com/ziglibs/known-folders/archive/fa75e1bc672952efa0cf06160bbd942b47f6d59b.tar.gz",
-            .hash = "122048992ca58a78318b6eba4f65c692564be5af3b30fbef50cd4abeda981b2e7fa5",
+            .url = "https://github.com/ziglibs/known-folders/archive/855473062efac722624737f1adc56f9c0dd92017.tar.gz",
+            .hash = "1220f9d9dd88b1352b1a2bde4a96f547a1591d66ad0a9d76854d0c2c7fa59eef2508",
         },
         .xcode_frameworks = .{
             .url = "https://github.com/hexops/xcode-frameworks/archive/8a920385383cc4c0a2a4f55b084d402a9400a5a8.tar.gz",
             .hash = "122051b3c616c62d55a82207c1cb76e2264b26e8378f56b1e5376d7684bd13616589",
         },
         .refresh_api = .{
-            .url = "https://github.com/LittleBigRefresh/refresh-api-zig/archive/fca1b8354eafd50bbcc36f5adc5cf0e94207bb6d.tar.gz",
-            .hash = "12204226d97211230ee3bab6374775fc46464fc34bf75b46f3ac0c4bcb6393837aaf",
+            .url = "https://github.com/LittleBigRefresh/refresh-api-zig/archive/cb50fb960ff186d502a2d2307ab344223da1c58b.tar.gz",
+            .hash = "1220e05e6e1d110e9b2e4511358e621a2b9e7b86e8f33bd7201d21e30f1992073bc4",
         },
     },
     .paths = .{

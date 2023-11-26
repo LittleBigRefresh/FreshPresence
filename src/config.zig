@@ -48,7 +48,7 @@ pub fn getConfig(allocator: std.mem.Allocator) !Self {
             file.close();
 
             //Get the full path of the config
-            var full_path = try (config_dir orelse cwd).realpathAlloc(allocator, config_filename);
+            const full_path = try (config_dir orelse cwd).realpathAlloc(allocator, config_filename);
             defer allocator.free(full_path);
 
             std.log.info("Created config file at path {s}", .{full_path});
@@ -67,7 +67,7 @@ pub fn getConfig(allocator: std.mem.Allocator) !Self {
                 c.BoxerButtonsYesNo,
             ) == c.BoxerSelectionYes) {
                 if (builtin.os.tag == .windows) {
-                    var windows_path = try std.unicode.utf8ToUtf16LeWithNull(allocator, full_path);
+                    const windows_path = try std.unicode.utf8ToUtf16LeWithNull(allocator, full_path);
                     defer allocator.free(windows_path);
 
                     _ = win32.ShellExecuteW(null, std.unicode.utf8ToUtf16LeStringLiteral("edit"), windows_path, null, null, 0);
@@ -93,7 +93,7 @@ pub fn getConfig(allocator: std.mem.Allocator) !Self {
     defer file.close();
 
     //Get the full path of the config
-    var full_path = try (config_dir orelse cwd).realpathAlloc(allocator, config_filename);
+    const full_path = try (config_dir orelse cwd).realpathAlloc(allocator, config_filename);
     defer allocator.free(full_path);
 
     std.log.info("Reading config from {s}", .{full_path});

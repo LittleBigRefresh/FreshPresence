@@ -38,7 +38,7 @@ pub const std_options = struct {
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer if (gpa.deinit() == .leak) @panic("MEMORY LEAK");
-    var allocator = gpa.allocator();
+    const allocator = gpa.allocator();
 
     runApp(allocator) catch |err| {
         var text = std.ArrayList(u8).init(allocator);
@@ -83,7 +83,7 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
     var user_info_response = try Api.getUserByUsername(allocator, uri, config.username);
     defer user_info_response.deinit();
 
-    var user = switch (user_info_response.response) {
+    const user = switch (user_info_response.response) {
         .data => |data| data,
         .error_response => |err| {
             if (err.api_error != Api.Error.ApiNotFoundError) {
