@@ -18,6 +18,10 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .optimize = optimize,
     });
+    if (b.option(bool, "use_llvm", "Use the LLVM backend")) |use_llvm| {
+        exe.use_lld = use_llvm;
+        exe.use_llvm = use_llvm;
+    }
     exe.addModule("api", refresh_api_zig.module("refresh-api-zig"));
     //If we are on MacOS, we need to import the xcode frameworks
     if (target.getOsTag() == .macos) {
