@@ -29,7 +29,11 @@ pub const std_options = struct {
         std.debug.getStderrMutex().lock();
         defer std.debug.getStderrMutex().unlock();
 
-        nosuspend stderr.print("{c}" ++ color ++ level_txt ++ prefix2 ++ format ++ "{c}[0m\n", .{esc_code} ++ args ++ .{esc_code}) catch return;
+        if (builtin.os.tag != .windows) {
+            nosuspend stderr.print("{c}" ++ color ++ level_txt ++ prefix2 ++ format ++ "{c}[0m\n", .{esc_code} ++ args ++ .{esc_code}) catch return;
+        } else {
+            nosuspend stderr.print(level_txt ++ prefix2 ++ format ++ "\r\n", args) catch return;
+        }
     }
 
     pub const log_level = if (builtin.mode == .Debug) .debug else .info;
