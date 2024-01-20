@@ -7,6 +7,8 @@ const Api = @import("api");
 const c = @import("c.zig").c;
 const Config = @import("config.zig");
 
+var terminal_translation = true;
+
 pub const std_options = struct {
     pub fn logFn(
         comptime message_level: std.log.Level,
@@ -22,6 +24,7 @@ pub const std_options = struct {
             .debug => "[1;35m",
             .info => "[1;37m",
         };
+
         const level_txt = comptime message_level.asText();
         const prefix2 = if (scope == .default) ": " else "(" ++ @tagName(scope) ++ "): ";
         const stderr = std.io.getStdErr().writer();
@@ -29,13 +32,21 @@ pub const std_options = struct {
         std.debug.getStderrMutex().lock();
         defer std.debug.getStderrMutex().unlock();
 
-        nosuspend stderr.print("{c}" ++ color ++ level_txt ++ prefix2 ++ format ++ "{c}[0m\n", .{esc_code} ++ args ++ .{esc_code}) catch return;
+        if (terminal_translation) {
+            nosuspend stderr.print("{c}" ++ color ++ level_txt ++ prefix2 ++ format ++ "{c}[0m\n", .{esc_code} ++ args ++ .{esc_code}) catch return;
+        } else {
+            nosuspend stderr.print(level_txt ++ prefix2 ++ format, args) catch return;
+        }
     }
 
     pub const log_level = if (builtin.mode == .Debug) .debug else .info;
 };
 
 pub fn main() !void {
+    if (builtin.os.tag == .windows) {
+        terminal_translation = try @import("windows.zig").enableTerminalSequences();
+    }
+
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer if (gpa.deinit() == .leak) @panic("MEMORY LEAK");
     const allocator = gpa.allocator();
@@ -384,6 +395,7 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
                 }
 
                 if (config.close_upon_game_exit) {
+                    std.log.info("User is not in a room, exiting...", .{});
                     return;
                 }
 
