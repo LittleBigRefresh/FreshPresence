@@ -15,16 +15,16 @@
             .hash = "1220b322b8ec9b10bc79e9da8def6cc3a49c9ffccf87d2e7577fc6e522bd0893173b",
         },
         .known_folders = .{
-            .url = "https://github.com/ziglibs/known-folders/archive/806ba01b872820004c7dec3117cb0db66b206af6.tar.gz",
-            .hash = "122094b48dea08e241b48d0ec32e3df6965e814091e3cabaff942e62d053f3ff9b5f",
+            .url = "https://github.com/ziglibs/known-folders/archive/055c95a717c5b54a0fc52ff5f370439c28eb2e73.tar.gz",
+            .hash = "12204a8a7e9184a77f70795b1fc8a9f94dff5cce208c20c5c6452967dddc498e0b64",
         },
         .xcode_frameworks = .{
             .url = "https://github.com/hexops/xcode-frameworks/archive/ff1f5c15120b65504d8feccca8015a7e96ed580c.tar.gz",
             .hash = "12207bc2707695102c636c26b60343e634127ee4d6e23210b1ae1664b2b2fea6076f",
         },
         .refresh_api = .{
-            .url = "https://github.com/LittleBigRefresh/refresh-api-zig/archive/227fbf11b0d6becc36d17fa768fd18c3c22d191c.tar.gz",
-            .hash = "1220db01a14adf882f68ba710f1f24a91abd848f659bb48c54fbf8828df227d2638e",
+            .url = "https://github.com/LittleBigRefresh/refresh-api-zig/archive/1fbf732814649afc581654902a34b31b3c2d3396.tar.gz",
+            .hash = "122021b30b9e245bf3b5e292aebcc1f688918fa977016178fd0e9811d1c903156390",
         },
     },
     .paths = .{

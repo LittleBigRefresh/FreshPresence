@@ -7,36 +7,37 @@ const Api = @import("api");
 const c = @import("c.zig").c;
 const Config = @import("config.zig");
 
-pub const std_options = struct {
-    pub fn logFn(
-        comptime message_level: std.log.Level,
-        comptime scope: @Type(.EnumLiteral),
-        comptime format: []const u8,
-        args: anytype,
-    ) void {
-        const esc_code = std.ascii.control_code.esc;
+pub fn logFn(
+    comptime message_level: std.log.Level,
+    comptime scope: @Type(.EnumLiteral),
+    comptime format: []const u8,
+    args: anytype,
+) void {
+    const esc_code = std.ascii.control_code.esc;
 
-        const color = switch (message_level) {
-            .err => "[1;31m",
-            .warn => "[1;93m",
-            .debug => "[1;35m",
-            .info => "[1;37m",
-        };
-        const level_txt = comptime message_level.asText();
-        const prefix2 = if (scope == .default) ": " else "(" ++ @tagName(scope) ++ "): ";
-        const stderr = std.io.getStdErr().writer();
+    const color = switch (message_level) {
+        .err => "[1;31m",
+        .warn => "[1;93m",
+        .debug => "[1;35m",
+        .info => "[1;37m",
+    };
+    const level_txt = comptime message_level.asText();
+    const prefix2 = if (scope == .default) ": " else "(" ++ @tagName(scope) ++ "): ";
+    const stderr = std.io.getStdErr().writer();
 
-        std.debug.getStderrMutex().lock();
-        defer std.debug.getStderrMutex().unlock();
+    std.debug.getStderrMutex().lock();
+    defer std.debug.getStderrMutex().unlock();
 
-        if (builtin.os.tag != .windows) {
-            nosuspend stderr.print("{c}" ++ color ++ level_txt ++ prefix2 ++ format ++ "{c}[0m\n", .{esc_code} ++ args ++ .{esc_code}) catch return;
-        } else {
-            nosuspend stderr.print(level_txt ++ prefix2 ++ format ++ "\r\n", args) catch return;
-        }
+    if (builtin.os.tag != .windows) {
+        nosuspend stderr.print("{c}" ++ color ++ level_txt ++ prefix2 ++ format ++ "{c}[0m\n", .{esc_code} ++ args ++ .{esc_code}) catch return;
+    } else {
+        nosuspend stderr.print(level_txt ++ prefix2 ++ format ++ "\r\n", args) catch return;
     }
+}
 
-    pub const log_level = if (builtin.mode == .Debug) .debug else .info;
+pub const std_options: std.Options = .{
+    .logFn = logFn,
+    .log_level = if (builtin.mode == .Debug) .debug else .info,
 };
 
 pub fn main() !void {
