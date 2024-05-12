@@ -281,11 +281,15 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
                         .small_image = null,
                         .small_text = null,
                     },
-                    .party = .{
-                        .id = Rpc.Packet.ArrayString(128).create(room.roomId),
-                        .privacy = Rpc.Packet.Presence.Party.Privacy.private,
-                        .size = &[2]i32{ @intCast(room.playerIds.len), 4 },
-                    },
+                    // On LBP1, we dont actually get any detailed room info, so lets hide the party count
+                    .party = if (room.game == .little_big_planet_1)
+                        null
+                    else
+                        .{
+                            .id = Rpc.Packet.ArrayString(128).create(room.roomId),
+                            .privacy = Rpc.Packet.Presence.Party.Privacy.private,
+                            .size = &[2]i32{ @intCast(room.playerIds.len), 4 },
+                        },
                 };
 
                 switch (room.levelType) {
