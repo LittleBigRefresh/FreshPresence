@@ -19,6 +19,8 @@ jobs:
 
       - name: Install Zig
         uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: 0.12.0-dev.3180+83e578a18
     
       - name: Build 
         run: zig build -Doptimize=${{ matrix.mode }} -Dtarget=${{ matrix.target }}
