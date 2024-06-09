@@ -427,7 +427,7 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
     }
 }
 
-fn runRpcThread(rpc_client: *Rpc, app_id: []const u8) void {
+fn runRpcThread(rpc_client: *Rpc, app_id: []const u8) !void {
     rpc_client.run(.{
         .client_id = app_id,
     }) catch |err| {
@@ -447,7 +447,7 @@ fn runRpcThread(rpc_client: *Rpc, app_id: []const u8) void {
 
         std.log.err("rpc client err: {s}", .{@errorName(err)});
 
-        err catch unreachable;
+        return err;
     };
 }
 
