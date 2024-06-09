@@ -25,8 +25,8 @@ pub fn logFn(
     const prefix2 = if (scope == .default) ": " else "(" ++ @tagName(scope) ++ "): ";
     const stderr = std.io.getStdErr().writer();
 
-    std.debug.getStderrMutex().lock();
-    defer std.debug.getStderrMutex().unlock();
+    std.debug.lockStdErr();
+    defer std.debug.unlockStdErr();
 
     if (builtin.os.tag != .windows) {
         nosuspend stderr.print("{c}" ++ color ++ level_txt ++ prefix2 ++ format ++ "{c}[0m\n", .{esc_code} ++ args ++ .{esc_code}) catch return;
@@ -49,7 +49,9 @@ pub fn main() !void {
         var text = std.ArrayList(u8).init(allocator);
         defer text.deinit();
 
-        try std.fmt.format(text.writer(), "Unhandled error {s}!\x00", .{@errorName(err)});
+        try std.fmt.format(text.writer(), "Unhandled error {s}!", .{@errorName(err)});
+        // null terminate the string
+        try text.append(0);
 
         _ = c.boxerShow(
             text.items.ptr,
@@ -73,23 +75,30 @@ fn failOnApiError(response: anytype) Api.Error!@TypeOf(response.response.data) {
 }
 
 pub fn runApp(allocator: std.mem.Allocator) !void {
+    // Read the config
     const config = try Config.getConfig(allocator);
     defer config.deinit(allocator);
 
-    var uri = try std.Uri.parse(config.instance_url);
+    // Parse the server URI from the config
+    var server_uri = try std.Uri.parse(config.instance_url);
 
-    var instance_info_response = try Api.getInstanceInformation(allocator, uri);
+    // Get the instance info response
+    var instance_info_response = try Api.getInstanceInformation(allocator, server_uri);
     defer instance_info_response.deinit();
 
+    // Get the instance info
     const instance_info = try failOnApiError(instance_info_response);
 
+    // Log that we found a Refresh instance
     std.log.info("Connected to instance {s}", .{instance_info.instanceName});
 
-    var user_info_response = try Api.getUserByUsername(allocator, uri, config.username);
+    // Get the user info
+    var user_info_response = try Api.getUserByUsername(allocator, server_uri, config.username);
     defer user_info_response.deinit();
 
     const user = switch (user_info_response.response) {
         .data => |data| data,
+        // If we hit an error getting the user, try to give a nice error to the user
         .error_response => |err| {
             if (err.api_error != Api.Error.ApiNotFoundError) {
                 std.log.err("Got unexpected error {s} while getting user! message: {s}", .{ @errorName(err.api_error), err.message });
@@ -99,7 +108,8 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
             var text = std.ArrayList(u8).init(allocator);
             defer text.deinit();
 
-            try std.fmt.format(text.writer(), "User {s} not found! Check your config.\x00", .{config.username});
+            try std.fmt.format(text.writer(), "User {s} not found! Check your config.", .{config.username});
+            try text.append(0);
 
             std.log.err("No user found by the name {s}!", .{config.username});
 
@@ -114,36 +124,55 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
         },
     };
 
+    // Log that we found a user
     std.log.info("Found user {s} with id {s}", .{
         user.username,
         user.userId,
     });
 
-    var profile_url = std.ArrayList(u8).init(allocator);
-    defer profile_url.deinit();
+    var profile_url_buf: [256]u8 = undefined;
 
-    try uri.format(":+", .{}, profile_url.writer());
-    try std.fmt.format(profile_url.writer(), "/user/{s}", .{config.username});
+    const profile_url: []const u8 = blk: {
+        var stream = std.io.fixedBufferStream(&profile_url_buf);
+
+        // Format the URL followed by the user string into the buffer
+        try server_uri.format(";+", .{}, stream.writer());
+        try std.fmt.format(stream.writer(), "/user/{s}", .{config.username});
+
+        break :blk profile_url_buf[0..stream.pos];
+    };
 
     const useApplicationAssets = instance_info.richPresenceConfiguration.assetConfiguration.useApplicationAssets;
 
     //Qualify the fallback asset
-    var qualified_fallback_asset: ?[]const u8 = null;
-    defer if (qualified_fallback_asset) |asset| allocator.free(asset);
-    if (instance_info.richPresenceConfiguration.assetConfiguration.fallbackAsset) |fallback_asset|
-        qualified_fallback_asset = try Lbp.qualifyAsset(allocator, uri, fallback_asset, useApplicationAssets);
+    var qualified_fallback_asset_buf: [256]u8 = undefined;
+    const qualified_fallback_asset: ?[]const u8 = if (instance_info.richPresenceConfiguration.assetConfiguration.fallbackAsset) |fallback_asset| blk: {
+        var stream = std.io.fixedBufferStream(&qualified_fallback_asset_buf);
+
+        try Lbp.qualifyAsset(stream.writer(), server_uri, fallback_asset, useApplicationAssets);
+
+        break :blk qualified_fallback_asset_buf[0..stream.pos];
+    } else null;
 
     //Qualify the pod asset
-    var qualified_pod_asset: ?[]const u8 = null;
-    defer if (qualified_pod_asset) |asset| allocator.free(asset);
-    if (instance_info.richPresenceConfiguration.assetConfiguration.podAsset) |pod_asset|
-        qualified_pod_asset = try Lbp.qualifyAsset(allocator, uri, pod_asset, useApplicationAssets);
+    var qualified_pod_asset_buf: [256]u8 = undefined;
+    const qualified_pod_asset: ?[]const u8 = if (instance_info.richPresenceConfiguration.assetConfiguration.podAsset) |pod_asset| blk: {
+        var stream = std.io.fixedBufferStream(&qualified_pod_asset_buf);
+
+        try Lbp.qualifyAsset(stream.writer(), server_uri, pod_asset, useApplicationAssets);
+
+        break :blk qualified_pod_asset_buf[0..stream.pos];
+    } else null;
 
     //Qualify the moon asset
-    var qualified_moon_asset: ?[]const u8 = null;
-    defer if (qualified_moon_asset) |asset| allocator.free(asset);
-    if (instance_info.richPresenceConfiguration.assetConfiguration.moonAsset) |moon_asset|
-        qualified_moon_asset = try Lbp.qualifyAsset(allocator, uri, moon_asset, useApplicationAssets);
+    var qualified_moon_asset_buf: [256]u8 = undefined;
+    const qualified_moon_asset: ?[]const u8 = if (instance_info.richPresenceConfiguration.assetConfiguration.moonAsset) |moon_asset| blk: {
+        var stream = std.io.fixedBufferStream(&qualified_moon_asset_buf);
+
+        try Lbp.qualifyAsset(stream.writer(), server_uri, moon_asset, useApplicationAssets);
+
+        break :blk qualified_moon_asset_buf[0..stream.pos];
+    } else null;
 
     var rpc_client = try Rpc.init(allocator, &ready);
     defer rpc_client.deinit();
@@ -180,12 +209,13 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
                         .publisher_username = Rpc.Packet.ArrayString(128).create(level.publisher.username),
                         .icon_hash = Rpc.Packet.ArrayString(256).create(level.iconHash),
                         .site_url = blk: {
-                            var str: Rpc.Packet.ArrayString(256) = undefined;
-                            var stream = std.io.fixedBufferStream(&str.buf);
-                            try _uri.format(":+", .{}, stream.writer());
+                            var str: [256]u8 = undefined;
+
+                            var stream = std.io.fixedBufferStream(&str);
+                            try _uri.format(";+", .{}, stream.writer());
                             try std.fmt.format(stream.writer(), "/level/{d}", .{id});
-                            str.len = stream.pos;
-                            break :blk str;
+
+                            break :blk .{ .buf = str, .len = stream.pos };
                         },
                     };
                 },
@@ -204,17 +234,23 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
 
     var last_level_info: ?LevelInfo = null;
 
-    while (true) {
-        var arena = std.heap.ArenaAllocator.init(allocator);
-        defer arena.deinit();
+    // Create a single arena so that we can re-use the existing allocations as much as possible
+    var arena = std.heap.ArenaAllocator.init(allocator);
+    defer arena.deinit();
 
-        var room_response = try Api.getRoomByUsername(arena.allocator(), uri, config.username);
+    // Main busy loop
+    while (true) {
+        // Limit the arena size to 500kb, to make the app as lean as possible
+        defer _ = arena.reset(.{ .retain_with_limit = 1024 * 500 });
+
+        // Get the info of the user's room
+        var room_response = try Api.getRoomByUsername(arena.allocator(), server_uri, config.username);
         defer room_response.deinit();
 
         switch (room_response.response) {
             .data => |room| {
                 //If the rpc client is stopped,
-                if (!rpc_client.run_loop.load(.SeqCst)) {
+                if (!rpc_client.run_loop.load(.seq_cst)) {
                     std.debug.assert(rpc_thread == null);
 
                     std.log.debug("starting rpc thread", .{});
@@ -236,7 +272,10 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
                 }
 
                 var presence = Rpc.Packet.Presence{
-                    .buttons = undefined,
+                    .buttons = &.{Rpc.Packet.Presence.Button{
+                        .label = try Rpc.Packet.ArrayString(128).create_from_format("View {s}'s Profile", .{user.username}),
+                        .url = Rpc.Packet.ArrayString(256).create(profile_url),
+                    }},
                     .details = Rpc.Packet.ArrayString(128).create(switch (room.levelType) {
                         .story => "Playing a story level",
                         .online => "Playing a level",
@@ -281,7 +320,7 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
                         .small_image = null,
                         .small_text = null,
                     },
-                    // On LBP1, we dont actually get any detailed room info, so lets hide the party count
+                    // On LBP1, we dont actually get any detailed room info, so lets hide the party info
                     .party = if (room.game == .little_big_planet_1)
                         null
                     else
@@ -299,35 +338,30 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
                             //And the level id is different,
                             if (room.levelId != last_level.id) {
                                 //Update the last level info
-                                last_level_info = try LevelInfo.create(arena.allocator(), uri, room.levelId);
+                                last_level_info = try LevelInfo.create(arena.allocator(), server_uri, room.levelId);
                             }
                         } else {
                             //Update the last level info
-                            last_level_info = try LevelInfo.create(arena.allocator(), uri, room.levelId);
+                            last_level_info = try LevelInfo.create(arena.allocator(), server_uri, room.levelId);
                         }
 
                         //If we have level info
                         if (last_level_info) |last_level| {
-                            presence.details = undefined;
-                            var details_stream = std.io.fixedBufferStream(&presence.details.buf);
-                            try std.fmt.format(details_stream.writer(), "Playing {s} by {s}", .{ last_level.name.slice(), last_level.publisher_username.slice() });
-                            presence.details.len = details_stream.pos;
+                            presence.details = try Rpc.Packet.ArrayString(128).create_from_format("Playing {s} by {s}", .{ last_level.name.slice(), last_level.publisher_username.slice() });
 
                             //If the icon hash is not a GUID
                             if (last_level.icon_hash.len > 0 and last_level.icon_hash.buf[0] != 'g') {
-                                presence.assets.large_image = undefined;
+                                var buf: [256]u8 = undefined;
 
                                 //Set the asset to the URL for that asset on the API
-                                var large_image_stream = std.io.fixedBufferStream(&presence.assets.large_image.?.buf);
-                                try uri.format(":+", .{}, large_image_stream.writer());
-                                try std.fmt.format(large_image_stream.writer(), "/api/v3/assets/{s}/image", .{last_level.icon_hash.slice()});
-                                presence.assets.large_image.?.len = large_image_stream.pos;
+                                var stream = std.io.fixedBufferStream(&buf);
+                                try server_uri.format(";+", .{}, stream.writer());
+                                try std.fmt.format(stream.writer(), "/api/v3/assets/{s}/image", .{last_level.icon_hash.slice()});
+
+                                presence.assets.large_image = .{ .buf = buf, .len = stream.pos };
                             }
 
-                            presence.assets.large_text = undefined;
-                            var large_text_stream = std.io.fixedBufferStream(&presence.assets.large_text.?.buf);
-                            try std.fmt.format(large_text_stream.writer(), "{s} by {s}", .{ last_level.name.slice(), last_level.publisher_username.slice() });
-                            presence.assets.large_text.?.len = large_text_stream.pos;
+                            presence.assets.large_text = try Rpc.Packet.ArrayString(128).create_from_format("{s} by {s}", .{ last_level.name.slice(), last_level.publisher_username.slice() });
                         }
                     },
                     .moon => {
@@ -347,24 +381,13 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
                     else => {},
                 }
 
+                // If we have level info, then add a second button for viewing the level info
                 if (last_level_info) |level_info| {
-                    std.log.debug("level button url {s}\n", .{level_info.site_url.slice()});
                     presence.buttons = &.{
-                        Rpc.Packet.Presence.Button{
-                            .label = try Rpc.Packet.ArrayString(128).create_from_format("View {s}'s Profile", .{user.username}),
-                            .url = Rpc.Packet.ArrayString(256).create(profile_url.items),
-                        },
+                        presence.buttons.?[0],
                         Rpc.Packet.Presence.Button{
                             .label = Rpc.Packet.ArrayString(128).create("View Level's Page"),
                             .url = level_info.site_url,
-                        },
-                    };
-                } else {
-                    std.log.debug("level button url {s}", .{profile_url.items});
-                    presence.buttons = &.{
-                        Rpc.Packet.Presence.Button{
-                            .label = Rpc.Packet.ArrayString(128).create("Profile"),
-                            .url = Rpc.Packet.ArrayString(256).create(profile_url.items),
                         },
                     };
                 }
@@ -381,8 +404,8 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
                     return err.api_error;
                 }
 
-                //If the loop is running,
-                if (rpc_client.run_loop.load(.SeqCst)) {
+                //If we got a "not found" error, and the loop is running,
+                if (rpc_client.run_loop.load(.seq_cst)) {
                     std.log.debug("ending rpc thread", .{});
                     //Tell the RPC client to stop
                     rpc_client.stop();
@@ -392,11 +415,12 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
                     rpc_thread = null;
                 }
 
+                // Close the app since the game has exited/room has died
                 if (config.close_upon_game_exit) {
                     return;
                 }
 
-                //Sleep for 60s
+                //Sleep for 60s, to not eat up unnecessary CPU/IO
                 std.time.sleep(std.time.ns_per_s * 60);
             },
         }

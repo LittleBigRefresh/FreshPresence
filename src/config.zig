@@ -72,7 +72,7 @@ pub fn getConfig(allocator: std.mem.Allocator) !Self {
 
                     _ = win32.ShellExecuteW(null, std.unicode.utf8ToUtf16LeStringLiteral("edit"), windows_path, null, null, 0);
                 } else {
-                    var child_process = std.ChildProcess.init(
+                    var child_process = std.process.Child.init(
                         switch (builtin.os.tag) {
                             .linux => &.{ "xdg-open", full_path },
                             .macos => &.{ "open", full_path },
@@ -80,12 +80,11 @@ pub fn getConfig(allocator: std.mem.Allocator) !Self {
                         },
                         allocator,
                     );
-                    try child_process.spawn();
-                    _ = try child_process.wait();
+                    _ = try child_process.spawnAndWait();
                 }
             }
 
-            std.os.exit(0);
+            std.posix.exit(0);
         } else {
             return err;
         }

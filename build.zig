@@ -15,7 +15,7 @@ pub fn build(b: *std.Build) !void {
 
     const exe = b.addExecutable(.{
         .name = "FreshPresence",
-        .root_source_file = .{ .path = "src/main.zig" },
+        .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -26,7 +26,8 @@ pub fn build(b: *std.Build) !void {
     exe.root_module.addImport("api", module);
     //If we are on MacOS, we need to import the xcode frameworks
     if (target.result.isDarwin()) {
-        @import("xcode_frameworks").addPaths(exe);
+        try exe.root_module.include_dirs.appendSlice(b.allocator, zboxer_lib.root_module.include_dirs.items);
+        try exe.root_module.lib_paths.appendSlice(b.allocator, zboxer_lib.root_module.lib_paths.items);
     }
     if (optimize == .ReleaseSmall) {
         exe.root_module.strip = true;

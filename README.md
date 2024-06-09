@@ -5,6 +5,7 @@ A tiny background app providing Discord Rich Presence for the LittleBigPlanet ga
 [![Discord](https://img.shields.io/discord/1049223665243389953?label=Discord)](https://discord.gg/xN5yKdxmWG)
 
 ## Compatibility
+
 FreshPresence is only designed for the [Refresh v3 API](https://github.com/LittleBigRefresh/Refresh), so FreshPresence will not work with alternative servers.
 
 Additionally, LBP1 will only have limited rich presence.
@@ -12,6 +13,7 @@ Additionally, LBP1 will only have limited rich presence.
 ## Running
 
 ### Legalties
+
 > [!WARNING]
 > FreshPresence is still early in development, as such we cannot make any guarantees about anything. You use FreshPresence at YOUR OWN RISK.
 > FreshPresence is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -25,6 +27,7 @@ Anyway, with the legal disclaimers out of the way...
 ### Instructions
 
 #### From Github Actions
+
 1. [Find the latest run](https://github.com/LittleBigRefresh/FreshPresence/actions)
 1. Download the artifact for your OS, extract it somewhere most convenient to you, and run it.
 1. Once it closes, update the `fresh_presence_config.ini` file to your preferred settings, set your username, then save and close the file.
@@ -33,12 +36,14 @@ Anyway, with the legal disclaimers out of the way...
 To update, you can simply repeat this process, overwriting the previous file.
 
 ## It's on fire! What do I do?
+
 FreshPresence isn't perfect, so it's not exactly uncommon to run into bugs. If you'd like, you can [create an issue](https://github.com/LittleBigRefresh/FreshPresence/issues/new) here on GitHub or join our [Discord](https://discord.gg/xN5yKdxmWG) for support.
 
 Wherever you choose to post, be sure to include details about how to trigger the bug, text logs (not screenshots!), your environment, the bug's symptoms, and anything else you might find relevant to the bug.
 
 ## Building & Contributing
-To contribute to FreshPresence, it may be helpful to refer to our [contributing guide](CONTRIBUTING.md) to get a basic development environment set up. If you're a pro, feel free to skip this as it's just your bog-standard setting up Zig guide.
+
+To contribute to FreshPresence, it may be helpful to refer to our [contributing guide](CONTRIBUTING.md) to get a basic development environment set up. If you're a pro, feel free to skip this as it's just your bog-standard Zig set-up guide.
 
 However, something important for all those involved: we also serve additional documentation relating to FreshPresence, Refresh, Bunkum, and LittleBigPlanet in general in our [Docs repo](https://littlebigrefresh.github.io/Docs/).
 

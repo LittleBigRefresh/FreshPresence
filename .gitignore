@@ -1,3 +1,3 @@
 zig-out/
-zig-cache/
+.zig-cache/
 fresh_presence_config.ini
