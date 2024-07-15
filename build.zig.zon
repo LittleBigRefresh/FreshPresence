@@ -19,8 +19,8 @@
             .hash = "12204536e3fef16cd9000b9f023a7c8c53399c4ebd70a9f7e310d1464484d410731d",
         },
         .refresh_api = .{
-            .url = "git+https://github.com/LittleBigRefresh/refresh-api-zig#d98003c71161521b68358cfc2fcd0edf189d033d",
-            .hash = "1220ef4701713dd8589870c9b1d64ba298da8ff84676d5c28b75f8c354b353e87f88",
+            .url = "git+https://github.com/LittleBigRefresh/refresh-api-zig#00a4ead19a74e1673055f3a8b7f4a5ab0c8993c5",
+            .hash = "12208a0bebb60e9e72414d3b54e27657a4522dc78682994c0b7cc9932e64022e05e5",
         },
     },
     .paths = .{
