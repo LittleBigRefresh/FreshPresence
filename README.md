@@ -26,12 +26,12 @@ Anyway, with the legal disclaimers out of the way...
 
 ### Instructions
 
-#### From Github Actions
+#### From Releases
 
-1. [Find the latest run](https://github.com/LittleBigRefresh/FreshPresence/actions)
-1. Download the artifact for your OS, extract it somewhere most convenient to you, and run it.
-1. Once it closes, update the `fresh_presence_config.ini` file to your preferred settings, set your username, then save and close the file.
-1. Open FreshPresence once more, and it should now show your profile.
+1. [Find the latest release](https://github.com/LittleBigRefresh/FreshPresence/releases/latest)
+1. Download the version for your OS/CPU, extract it somewhere most convenient to you, and run it.
+1. It will open a message box asking if you want to edit the config file, press Yes, then update the `fresh_presence_config.ini` file to contain your username and preferred settings.
+1. Open FreshPresence once more, and it should now show your profile on Discord.
 
 To update, you can simply repeat this process, overwriting the previous file.
 
