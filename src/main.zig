@@ -9,7 +9,7 @@ const Config = @import("config.zig");
 
 pub fn logFn(
     comptime message_level: std.log.Level,
-    comptime scope: @Type(.EnumLiteral),
+    comptime scope: @Type(.enum_literal),
     comptime format: []const u8,
     args: anytype,
 ) void {
@@ -206,7 +206,7 @@ pub fn runApp(allocator: std.mem.Allocator) !void {
                     return @This(){
                         .id = id,
                         .name = Rpc.Packet.ArrayString(128).create(level.title),
-                        .publisher_username = Rpc.Packet.ArrayString(128).create(level.publisher.username),
+                        .publisher_username = Rpc.Packet.ArrayString(128).create(if (level.publisher) |publisher| publisher.username else level.originalPublisher orelse "Unknown User"),
                         .icon_hash = Rpc.Packet.ArrayString(256).create(level.iconHash),
                         .site_url = blk: {
                             var str: [256]u8 = undefined;

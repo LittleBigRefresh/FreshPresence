@@ -9,7 +9,7 @@ This document details the steps and other important information on how to contri
 
 ## Software prerequisites
 
-- [Zig](https://ziglang.org) (We target the latest [Mach Nominated Zig Version](https://machengine.org/about/nominated-zig))
+- [Zig](https://ziglang.org) (We target the latest [Mach Nominated Zig Version](https://machengine.org/docs/nominated-zig/))
 - [Git](https://git-scm.com)
 - Any text editor
 

@@ -11,16 +11,16 @@
             .hash = "1220b7b6ecd4554d46c6c4a047dc32fb024cb12c1806809eb66128cfbe1ffdf249b5",
         },
         .zini = .{
-            .url = "git+https://github.com/Beyley/zini#58d413ea3a33c1ed5a88c2ec6a1ef5581e7bee15",
-            .hash = "12209bb5da9e8a7f39594bcb8e14282d4d2fb9f667005d33c1025369e4c2d41ba53d",
+            .url = "git+https://github.com/Beyley/zini#64362cc89365399d4cd7adf5183ea4b3e83377ce",
+            .hash = "12200eec7e92d200f3c6277098a87bec961b4f7b87e747a145ad703c56f19b90e4d2",
         },
         .known_folders = .{
-            .url = "git+https://github.com/ziglibs/known-folders#21a04eae9e0dca52e274ff848596941d5d68649f",
-            .hash = "12204536e3fef16cd9000b9f023a7c8c53399c4ebd70a9f7e310d1464484d410731d",
+            .url = "git+https://github.com/ziglibs/known-folders#1cceeb70e77dec941a4178160ff6c8d05a74de6f",
+            .hash = "12205f5e7505c96573f6fc5144592ec38942fb0a326d692f9cddc0c7dd38f9028f29",
         },
         .refresh_api = .{
-            .url = "git+https://github.com/LittleBigRefresh/refresh-api-zig#00a4ead19a74e1673055f3a8b7f4a5ab0c8993c5",
-            .hash = "12208a0bebb60e9e72414d3b54e27657a4522dc78682994c0b7cc9932e64022e05e5",
+            .url = "git+https://github.com/LittleBigRefresh/refresh-api-zig#a117144f6c1b3908505086b8aa65b084c6278a87",
+            .hash = "1220e8f8a8253b0f017cee80e9bcac257cd7be8a39a297698911f231c5d7684820ba",
         },
     },
     .paths = .{
