@@ -7,8 +7,8 @@
             .hash = "1220d704f8d738bee01de6e1e1388b0548c3390d5c07b120f71e62332f960b1e6f22",
         },
         .zBoxer = .{
-            .url = "git+https://github.com/Beyley/zBoxer#b81c8b4de8eba47f2e0d27e56ebfaa10727c1dcc",
-            .hash = "1220b7b6ecd4554d46c6c4a047dc32fb024cb12c1806809eb66128cfbe1ffdf249b5",
+            .url = "git+https://github.com/Beyley/zBoxer#4ff20c6fcec81ec07622106f16253839baaac4b6",
+            .hash = "122004ab3bb06f64ef457013723323562c652504b9a75880258865ceb4d56f1383d0",
         },
         .zini = .{
             .url = "git+https://github.com/Beyley/zini#64362cc89365399d4cd7adf5183ea4b3e83377ce",
