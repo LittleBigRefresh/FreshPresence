@@ -13,7 +13,7 @@ const win32 = @cImport({
 
 const Self = @This();
 
-instance_url: []const u8 = "https://refresh.jvyden.xyz/",
+instance_url: []const u8 = "https://lbp.littlebigrefresh.com/",
 username: []const u8 = "Username",
 close_upon_game_exit: bool = false,
 
